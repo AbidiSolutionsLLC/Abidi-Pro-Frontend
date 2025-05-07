@@ -5,6 +5,7 @@ import PeopleLayout from "./Pages/People/PeopleLayout";
 import Home from "./Pages/People/Home";
 import TimeTracker from "./Pages/People/TimeTracker";
 import Files from "./Pages/People/files/Files";
+import Profile from "./Pages/People/profile";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="timetracker" element={<TimeTracker />} />
           <Route path="files" element={<Files />} />
+          <Route path="profile" element={<Profile/>}/>
         </Route>
       </Routes>
     </>

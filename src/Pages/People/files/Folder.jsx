@@ -17,14 +17,14 @@ const Folder = ({ activeTab, search }) => {
         folders.map((folder, index) => (
           <div
             key={index}
-            className="flex items-center space-x-2 p-4 bg-white shadow-sm rounded-md hover:shadow-md"
+            className="flex items-center space-x-2 p-4 bg-secondary  shadow-sm rounded-md hover:shadow-md"
           >
             <img
               src="https://cdn-icons-png.flaticon.com/512/716/716784.png"
               alt="folder"
               className="w-6 h-6"
             />
-            <span className="text-gray-700 font-medium">{folder}</span>
+            <span className="text-heading font-medium">{folder}</span>
           </div>
         ))
       ) : (
@@ -35,5 +35,3 @@ const Folder = ({ activeTab, search }) => {
 };
 
 export default Folder;
-
-

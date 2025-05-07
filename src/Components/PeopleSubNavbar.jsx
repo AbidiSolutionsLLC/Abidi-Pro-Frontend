@@ -10,6 +10,7 @@ const PeopleSubNavbar = () => {
     { name: "Home", path: "/people" },
     { name: "Time Tracker", path: "/people/timetracker" },
     { name: "Files", path: "/people/files" },
+    { name: "Profile", path: "/people/profile" },
   ];
 
   React.useEffect(() => {
