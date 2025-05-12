@@ -226,6 +226,12 @@ const Navbar = () => {
                     >
                       Sign out
                     </Link>
+                    <Link
+                      to="/login"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                     login
+                    </Link>
                   </div>
                 )}
               </div>

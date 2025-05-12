@@ -72,7 +72,7 @@ const Home = () => {
   
 
   return (
-    <Card className="overflow-hidden bg-primary p-5 border m-4 shadow-sm min-h-[700px] border-none">
+    <Card className="relative flex flex-col bg-clip-border rounded-xl text-gray-700 overflow-hidden bg-primary p-5 border m-4 shadow-sm min-h-[700px] border-none">
       <CardBody className="bg-background rounded-lg border-0 shadow-sm flex items-center justify-between gap-4 p-3 sm:p-5 md:p-6">
         {/* Greeting */}
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">

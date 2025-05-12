@@ -120,7 +120,7 @@ const TimeTracker = () => {
             initial={{ x: activeSheet === "current" ? 300 : -300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: activeSheet === "current" ? -300 : 300, opacity: 0 }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.2 }}
             className="absolute w-full"
           >
             <table className="w-full text-center text-sm bg-background">
