@@ -1,42 +1,70 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./Components/navbar";
+
+// Layouts
+import AppLayout from "./Layout/AppLayout";
+import AuthLayout from "./layout/AuthLayout";
+
+// Pages
 import ThemeSelector from "./Pages/ThemeSelector";
-import PeopleLayout from "./layout/PeopleLayout";
+import Login from "./Pages/login/Login";
+import ForgotPass from "./Pages/login/ForgotPass";
+import ResetPassword from "./Pages/login/Resetpassword";
 import Home from "./Pages/People/Home";
 import TimeTracker from "./Pages/People/TimeTracker";
 import Files from "./Pages/People/Files";
 import Profile from "./Pages/People/profile";
-import Login from "./Pages/login/Login";
-import ForgotPass from "./Pages/login/ForgotPass";
 import EditProfile from "./Pages/People/EditProfile";
-import ResetPassword from "./Pages/login/Resetpassword";
 import LeaveTracker from "./Pages/People/LeaveTracker";
 import LeaveTrackerAdmin from "./Pages/People/LeaveTrackerAdmin";
-import AuthLayout from "./layout/AuthLayout";
-
+import FileTabs from "./Pages/People/FileTabs";
 function App() {
   return (
-<>
+    <>
       <Routes>
+        {/* Redirect to login by default */}
         <Route path="/" element={<Navigate to="/auth/login" />} />
-        <Route path="/auth" element={<AuthLayout/>}>
+
+        {/* Auth routes */}
+        <Route path="/auth" element={<AuthLayout />}>
           <Route index path="login" element={<Login />} />
-          <Route path="forgot-password" element={<ForgotPass/>} />
-          <Route path="reset-password" element={<ResetPassword/>} />
+          <Route path="forgot-password" element={<ForgotPass />} />
+          <Route path="reset-password" element={<ResetPassword />} />
         </Route>
+
+        {/* Theme Selector */}
         <Route path="/theme-selector" element={<ThemeSelector />} />
-        <Route path="/people/*" element={<PeopleLayout />}>
+
+        {/* Main App Routes with AppLayout and SubNavbar */}
+        <Route path="/people/*" element={<AppLayout />}>
           <Route index element={<Home />} />
           <Route path="timetracker" element={<TimeTracker />} />
           <Route path="files" element={<Files />} />
           <Route path="profile" element={<Profile />} />
           <Route path="edit-profile" element={<EditProfile />} />
-          <Route path ="leaveTracker" element={<LeaveTracker/>}/>
-          <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/>
+          <Route path="leaveTracker" element={<LeaveTracker />} />
+          <Route path="leaveTrackerAdmin" element={<LeaveTrackerAdmin />} />
+        </Route>
+
+        <Route path="/leave/*" element={<AppLayout />}>
+          <Route index element={<LeaveTracker />} />
+          <Route path="timetracker" element={<TimeTracker />} />
+          <Route path="leaveTrackerAdmin" element={<LeaveTrackerAdmin />} />
+        </Route>
+        <Route path="/file/*" element={<AppLayout />}>
+          <Route index element={<Files />} />
+          <Route path="role" element={<FileTabs />} />
+          
+        </Route>
+        <Route path="/time/*" element={<AppLayout />}>
+          <Route index element={<TimeTracker />} />
+          
+        </Route>
+        <Route path="/ticket/*" element={<AppLayout />}>
+          <Route index element={TimeTracker} />
+          
         </Route>
       </Routes>
-      </>
-
+    </>
   );
 }
 

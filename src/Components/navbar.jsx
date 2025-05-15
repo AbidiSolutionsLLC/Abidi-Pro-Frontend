@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate, NavLink } from "react-router-dom"; 
+import { Link, useLocation, useNavigate, NavLink } from "react-router-dom";
 import {
   BellIcon,
   Cog6ToothIcon,
   UsersIcon,
-  UserGroupIcon,
   FolderIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
+import { IoTicketOutline } from "react-icons/io5";
+import { MdOutlineTimer } from "react-icons/md";
+import { TbBeach } from "react-icons/tb";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,8 +19,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
-
-  const profileDropdownRef = useRef(null); // Ref for profile dropdown
+  const profileDropdownRef = useRef(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "system";
@@ -43,7 +44,6 @@ const Navbar = () => {
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -60,211 +60,143 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: "People", to: "/people", icon: UsersIcon },
-    { name: "Team", to: "/team", icon: UserGroupIcon },
-    { name: "Projects", to: "/projects", icon: FolderIcon },
-    { name: "Calendar", to: "/calendar", icon: CalendarDaysIcon },
+    { name: "Home", to: "/people", icon: UsersIcon },
+    { name: "Time Tracker", to: "/time", icon: MdOutlineTimer },
+    { name: "Leave Tracker", to: "/leave", icon: TbBeach },
+    { name: "Files", to: "/file", icon: FolderIcon },
+    { name: "Tickets", to: "/ticket", icon: IoTicketOutline },
+    { name: "Projects", to: "/calendar", icon: CalendarDaysIcon },
   ];
 
   return (
     <>
-<nav className="fixed top-0 left-0 w-full z-50 shadow-lg bg-primary text-text transition-colors duration-300">
-        <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-          <div className="relative flex items-center justify-between py-4">
-            {/* Mobile menu button */}
-            <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                type="button"
-                style={{ backgroundColor: "rgba(var(--color-primary-rgb), 0.3)" }}
-                className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              >
-                <svg
-                  className={`${mobileMenuOpen ? "hidden" : "block"} size-6`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
-                <svg
-                  className={`${mobileMenuOpen ? "block" : "hidden"} size-6`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+      <nav className="fixed top-0 left-0 w-full z-50 shadow-lg bg-primary text-text transition-colors duration-300">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+  {/* Left: Logo (20%) */}
+  <div className="w-1/5 flex items-center">
+    <img
+      className="h-8 w-auto"
+      src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+      alt="Logo"
+    />
+  </div>
 
-          {/* Logo */}
-          <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-            <div className="flex shrink-0 items-center">
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-              />
-            </div>
-          </div>
+  {/* Center: Nav Links (60%) */}
+  <div className="hidden sm:flex w-3/5 justify-center">
+    <div className="flex space-x-4">
+      {navLinks.map(({ name, to, icon: Icon }) => (
+        <NavLink
+          key={name}
+          to={to}
+          className={({ isActive }) =>
+            isActive
+              ? "relative group p-2 rounded-md bg-teal-700"
+              : "relative group p-2 rounded-md hover:bg-teal-700"
+          }
+        >
+          <Icon className="w-6 h-6 text-white" />
+          <span
+            className="absolute left-1/2 top-full mt-2 -translate-x-1/2 scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 ease-out rounded px-3 py-1 text-xs shadow-lg z-10"
+            style={{
+              backgroundColor: "var(--color-primary)",
+              color: "var(--color-text)",
+            }}
+          >
+            {name}
+          </span>
+        </NavLink>
+      ))}
+    </div>
+  </div>
 
-          {/* Main Nav */}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            <div className="hidden sm:ml-6 sm:block">
-              <div className="flex space-x-4">
-                {navLinks.map(({ name, to, icon: Icon }) => (
-                  <NavLink
-                    key={name}
-                    to={to}
-                    className={({ isActive }) =>
-                      name === "People"
-                        ? currentPath.startsWith("/people") || isActive
-                          ? "relative group p-2 rounded-md bg-teal-700"
-                          : "relative group p-2 rounded-md hover:bg-teal-700"
-                        : isActive
-                        ? "relative group p-2 rounded-md bg-teal-700"
-                        : "relative group p-2 rounded-md hover:bg-teal-700"
-                    }
-                  >
-                    <Icon className="w-6 h-6 text-white" />
-                    <span
-                      className="absolute left-1/2 top-full mt-2 -translate-x-1/2 scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 ease-out rounded px-3 py-1 text-xs shadow-lg z-10"
-                      style={{
-                        backgroundColor: "var(--color-primary)",
-                        color: "var(--color-text)",
-                      }}
-                    >
-                      {name}
-                    </span>
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+  {/* Right: Notifications, Settings, Profile (20%) */}
+  <div className="w-1/5 flex justify-end items-center space-x-4">
+    {/* Notification */}
+    <button className="relative p-1 text-white rounded-md hover:bg-secondary">
+      <span className="sr-only">View notifications</span>
+      <BellIcon className="h-6 w-6" />
+      <span className={`absolute -top-0 -right-0 h-2 w-2 rounded-full ${
+        hasNotifications ? "bg-red-500" : "bg-green-500"
+      }`}></span>
+    </button>
 
-            {/* Search */}
-            <div className="hidden sm:block">
-              <div className="items-center mx-4 relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="rounded-full px-4 py-1.5 pr-16 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-white shadow-md w-60 lg:w-80 transition-all duration-300"
-                />
-                <button
-                  type="button"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-teal-700 px-3 py-1 text-sm font-semibold rounded-full shadow hover:bg-teal-90 transition-all duration-200"
-                >
-                  Go
-                </button>
-              </div>
-            </div>
-
-            {/* Notification */}
-            <div className="relative ml-4">
-              <button className="relative p-1 text-white rounded-md hover:bg-secondary">
-                <span className="sr-only">View notifications</span>
-                <BellIcon className="h-6 w-6" />
-                <span
-                  className={`absolute -top-0 -right-0 h-2 w-2 rounded-full ${
-                    hasNotifications ? "bg-red-500" : "bg-green-500"
-                  }`}
-                ></span>
-              </button>
-            </div>
-
-            {/* Settings */}
-            <div className="relative ml-4 hidden sm:block">
-              <button
-                onClick={() => setSettingsOpen(!settingsOpen)}
-                className="p-1 text-white rounded-md hover:bg-secondary"
-              >
-                <span className="sr-only">Open settings</span>
-                <Cog6ToothIcon className="w-6 h-6" />
-              </button>
-              {settingsOpen && (
-                <div className="absolute right-0 mt-2 w-48 z-50 rounded-md bg-white shadow-lg ring-1 ring-black/5 py-2">
-                  <button
-                    onClick={() => {
-                      navigate("/theme-selector");
-                      setSettingsOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Theme Selector
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Profile Dropdown */}
-            <div ref={profileDropdownRef} className="relative ml-3">
-              <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none"
-              >
-                <span className="sr-only">Open user menu</span>
-                <img
-                  className="size-10 rounded-full"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
-                  alt="User"
-                />
-              </button>
-              {profileDropdownOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5">
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Your Profile
-                  </Link>
-                  <Link
-                    to="/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Settings
-                  </Link>
-                  <Link
-                    to="/auth/login"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Sign out
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu panel */}
-      {mobileMenuOpen && (
-        <div className="sm:hidden px-2 pt-2 pb-3 space-y-1 bg-primary text-white">
-          {navLinks.map(({ name, to, icon: Icon }) => (
-            <Link
-              key={name}
-              to={to}
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center space-x-2 rounded-md px-3 py-2 ${
-                currentPath === to ? "bg-secondary" : "hover:bg-secondary"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{name}</span>
-            </Link>
-          ))}
+    {/* Settings */}
+    <div className="relative hidden sm:block">
+      <button
+        onClick={() => setSettingsOpen(!settingsOpen)}
+        className="p-1 text-white rounded-md hover:bg-secondary"
+      >
+        <span className="sr-only">Open settings</span>
+        <Cog6ToothIcon className="w-6 h-6" />
+      </button>
+      {settingsOpen && (
+        <div className="absolute right-0 mt-2 w-48 z-50 rounded-md bg-white shadow-lg ring-1 ring-black/5 py-2">
+          <button
+            onClick={() => {
+              navigate("/theme-selector");
+              setSettingsOpen(false);
+            }}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Theme Selector
+          </button>
         </div>
       )}
-    </nav>
+    </div>
+
+    {/* Profile */}
+    <div ref={profileDropdownRef} className="relative">
+      <button
+        onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+        className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none"
+      >
+        <span className="sr-only">Open user menu</span>
+        <img
+          className="h-10 w-10 rounded-full"
+          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+          alt="User"
+        />
+      </button>
+      {profileDropdownOpen && (
+        <div className="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5">
+          <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            Your Profile
+          </Link>
+          <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            Settings
+          </Link>
+          <Link to="/auth/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            Sign out
+          </Link>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="sm:hidden px-2 pt-2 pb-3 space-y-1 bg-primary text-white">
+            {navLinks.map(({ name, to, icon: Icon }) => (
+              <Link
+                key={name}
+                to={to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center space-x-2 rounded-md px-3 py-2 ${
+                  currentPath === to ? "bg-secondary" : "hover:bg-secondary"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{name}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </nav>
+    </>
   );
 };
 
