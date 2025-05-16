@@ -20,6 +20,8 @@ import FileTabs from "./Pages/People/FileTabs";
 import ProjectDashBoard from "./Pages/Projects/ProjectDashBoard";
 import Projects from "./Pages/Projects/Projects";
 import Project from "./Pages/Projects/Project";
+import UserManagement from "./Pages/Admin/UserManagement";
+
 function App() {
   return (
     <>
@@ -69,11 +71,18 @@ function App() {
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
         </Route>
          <Route path="/project/*" element={<AppLayout />}>
+           <Route index element={<Navigate to="projectDashboard" replace />} />  // ✅ Redirect
+
           <Route  index path="projectDashboard"  element={<ProjectDashBoard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projectDetailed" element={<Project />} />
 
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
+        </Route>
+         <Route path="/admin/*" element={<AppLayout />}>
+          {/* <Route  index path="adminDashboard"  element={<Admin />} /> */}
+          <Route path="userManagement" element={<UserManagement />} />
+          <Route path="Activity Logs" element={<Project />} />
         </Route>
       </Routes>
     </>

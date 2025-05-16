@@ -7,10 +7,11 @@ import {
   FolderIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
+import { IoHomeOutline } from "react-icons/io5";
 import { IoTicketOutline } from "react-icons/io5";
 import { MdOutlineTimer } from "react-icons/md";
 import { TbBeach } from "react-icons/tb";
-
+ 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -20,11 +21,11 @@ const Navbar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   const profileDropdownRef = useRef(null);
-
+ 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "system";
     applyTheme(savedTheme);
-
+ 
     if (savedTheme === "system") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => applyTheme("system");
@@ -32,7 +33,7 @@ const Navbar = () => {
       return () => mediaQuery.removeEventListener("change", handleChange);
     }
   }, []);
-
+ 
   const applyTheme = (selectedTheme) => {
     const root = document.documentElement;
     root.classList.remove("theme-light", "theme-dark");
@@ -43,7 +44,7 @@ const Navbar = () => {
       root.classList.add(prefersDark ? "theme-dark" : "theme-light");
     }
   };
-
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -58,16 +59,17 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
+ 
   const navLinks = [
-    { name: "Home", to: "/people", icon: UsersIcon },
+    { name: "Home", to: "/people", icon: IoHomeOutline },
     { name: "Time Tracker", to: "/time", icon: MdOutlineTimer },
     { name: "Leave Tracker", to: "/leave", icon: TbBeach },
     { name: "Files", to: "/file", icon: FolderIcon },
     { name: "Tickets", to: "/ticket", icon: IoTicketOutline },
     { name: "Projects", to: "/project", icon: FolderIcon },
+    { name: "Admin Panel", to: "/admin", icon: UsersIcon },
   ];
-
+ 
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-50 shadow-lg bg-primary text-text transition-colors duration-300">
@@ -81,7 +83,7 @@ const Navbar = () => {
       alt="Logo"
     />
   </div>
-
+ 
   {/* Center: Nav Links (60%) */}
   <div className="hidden sm:flex w-3/5 justify-center">
     <div className="flex space-x-4">
@@ -109,7 +111,7 @@ const Navbar = () => {
       ))}
     </div>
   </div>
-
+ 
   {/* Right: Notifications, Settings, Profile (20%) */}
   <div className="w-1/5 flex justify-end items-center space-x-4">
     {/* Notification */}
@@ -120,7 +122,7 @@ const Navbar = () => {
         hasNotifications ? "bg-red-500" : "bg-green-500"
       }`}></span>
     </button>
-
+ 
     {/* Settings */}
     <div className="relative hidden sm:block">
       <button
@@ -144,7 +146,7 @@ const Navbar = () => {
         </div>
       )}
     </div>
-
+ 
     {/* Profile */}
     <div ref={profileDropdownRef} className="relative">
       <button
@@ -174,30 +176,32 @@ const Navbar = () => {
     </div>
   </div>
 </div>
-
+ 
         </div>
-
-      {/* Mobile menu panel */}
-      {mobileMenuOpen && (
-        <div className="sm:hidden px-2 pt-2 pb-3 space-y-1 bg-primary text-white">
-          {navLinks.map(({ name, to, icon: Icon }) => (
-            <Link
-              key={name}
-              to={to}
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center space-x-2 rounded-md px-3 py-2 ${
-                currentPath === to ? "bg-secondary" : "hover:bg-secondary"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{name}</span>
-            </Link>
-          ))}
-        </div>
-      )}
-    </nav>
+ 
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="sm:hidden px-2 pt-2 pb-3 space-y-1 bg-primary text-white">
+            {navLinks.map(({ name, to, icon: Icon }) => (
+              <Link
+                key={name}
+                to={to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center space-x-2 rounded-md px-3 py-2 ${
+                  currentPath === to ? "bg-secondary" : "hover:bg-secondary"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{name}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </nav>
     </>
   );
 };
-
+ 
 export default Navbar;
+ 
+ 

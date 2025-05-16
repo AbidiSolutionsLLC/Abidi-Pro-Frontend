@@ -53,4 +53,13 @@ export const moduleConfigs = {
       { name: "Project", path: "/project/projectDetailed" },
     ],
   },
+   admin: {
+    basePath: "/admin",
+    subNavbarKey: "admin",
+    links: [
+      { name: "Admin DashBoard", path: "/admin/adminDashboard" },
+      { name: "User Management", path: "/admin/userManagement" },
+      { name: "Activity Logs", path: "/admin/logs" },
+    ],
+  },
 };

@@ -38,7 +38,7 @@ const LeaveTracker = () => {
       "leaveType": "Sick Leave",
       "reason": "Illness",
       "duration": "2 days",
-      "status": "Approved"
+      "status": "Approve"
     },
     {
       "date": "11/20/2025",
@@ -49,7 +49,7 @@ const LeaveTracker = () => {
       "leaveType": "Casual Leave",
       "reason": "Personal Work",
       "duration": "10 day",
-      "status": "Pending"
+      "status": "Reject"
     }
 
   ]
@@ -276,7 +276,7 @@ const LeaveTracker = () => {
                           <span className='text-center'>{item.leaveType}</span>
                           <span className='text-center'>{item.reason}</span>
                           <span className='text-center'>{item.duration}</span>
-                          <StatusDropDown
+                            <StatusDropDown
                             status={item.status}
                             onChange={(newStatus) => {
                               // Handle the status update (e.g., call API or update state)

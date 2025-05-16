@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const StatusDropDown = ({ status, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const statuses = ['Approved', 'Pending', 'Rejected']; // Customize as needed
+  const statuses = ['Approve',  'Reject']; // Customize as needed
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -12,9 +12,9 @@ const StatusDropDown = ({ status, onChange }) => {
   };
 
   const statusColor = {
-    Approved: 'bg-completed ',
-    Pending: 'bg-slate-500 text-white',
-    Rejected: 'bg-red-500 text-white',
+    Approve: 'bg-completed ',
+    // Pending: 'bg-slate-500 text-white',
+    Reject: 'bg-red-500 text-white',
   };
 
   return (
