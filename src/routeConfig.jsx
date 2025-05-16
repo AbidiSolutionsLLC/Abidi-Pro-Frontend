@@ -15,8 +15,8 @@ export const moduleConfigs = {
     basePath: "/leave",
     subNavbarKey: "leave",
     links: [
-      { name: "Leave Summary", path: "/leave" },
-      { name: "Leave Request", path: "/leave/timetracker" },
+      { name: "Leave Summary", path: "/leave/summary" },
+      { name: "Leave Request", path: "/leave/request" },
       { name: "Leave Management", path: "/leave/leaveTrackerAdmin" },
     ],
   },
@@ -37,11 +37,11 @@ export const moduleConfigs = {
     ],
   },
   ticket: {
-    basePath: "/ticket",
-    subNavbarKey: "ticket",
+    basePath: "/tickets",
+    subNavbarKey: "tickets",
     links: [
-      { name: "Raise Ticket", path: "/time" },
-      { name: "All Tickets", path: "/role" },
+      { name: "Tickets", path: "/tickets" },
+      { name: "Apply for Ticket", path: "/role" },
     ],
   },
    project: {

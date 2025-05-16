@@ -21,6 +21,8 @@ import ProjectDashBoard from "./Pages/Projects/ProjectDashBoard";
 import Projects from "./Pages/Projects/Projects";
 import Project from "./Pages/Projects/Project";
 import UserManagement from "./Pages/Admin/UserManagement";
+import LeaveRequest from "./Pages/People/LeaveRequest";
+import Ticket from "./Pages/People/Ticket";
 
 function App() {
   return (
@@ -51,8 +53,9 @@ function App() {
         </Route>
 
         <Route path="/leave/*" element={<AppLayout />}>
-          <Route index element={<LeaveTracker />} />
-          <Route path="timetracker" element={<TimeTracker />} />
+          <Route index element={<Navigate to="/leave/summary" />} />
+          <Route index path="summary" element={<LeaveTracker />} />
+          <Route path="request" element={<LeaveRequest />} />
           <Route path="leaveTrackerAdmin" element={<LeaveTrackerAdmin />} />
         </Route>
         <Route path="/file/*" element={<AppLayout />}>
@@ -64,8 +67,8 @@ function App() {
         <Route index element={<TimeTracker />} />
          
         </Route>
-        <Route path="/ticket/*" element={<AppLayout />}>
-          <Route index element={TimeTracker} />
+        <Route path="/tickets/*" element={<AppLayout />}>
+          <Route index element={Ticket} />
           
           <Route path ="leaveTracker" element={<LeaveTracker/>}/>
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
