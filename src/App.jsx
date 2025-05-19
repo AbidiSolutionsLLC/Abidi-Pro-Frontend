@@ -24,25 +24,56 @@ import UserManagement from "./Pages/Admin/UserManagement";
 import LeaveRequest from "./Pages/People/LeaveRequest";
 import Ticket from "./Pages/People/Ticket";
 import ApproveTimelogs from "./Pages/People/ApproveTimelogs";
+import { ToastContainer } from "react-toastify";
+import PrivateRoute from "./Components/PrivateRoute";
+import PublicRoute from "./Components/PublicRoute";
+import "react-toastify/dist/ReactToastify.css";
+import VerifyOtp from "./Pages/login/VerifyOTP";
+
 function App() {
   return (
     <>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+      />
       <Routes>
         {/* Redirect to login by default */}
         <Route path="/" element={<Navigate to="/auth/login" />} />
 
         {/* Auth routes */}
-        <Route path="/auth" element={<AuthLayout />}>
+        <Route
+          path="/auth"
+          element={
+            <PublicRoute>
+              <AuthLayout />
+            </PublicRoute>
+          }
+        >
           <Route index path="login" element={<Login />} />
           <Route path="forgot-password" element={<ForgotPass />} />
           <Route path="reset-password" element={<ResetPassword />} />
+          <Route path="verify-otp" element={<VerifyOtp />} />
         </Route>
 
         {/* Theme Selector */}
         <Route path="/theme-selector" element={<ThemeSelector />} />
 
         {/* Main App Routes with AppLayout and SubNavbar */}
-        <Route path="/people/*" element={<AppLayout />}>
+        <Route
+          path="/people/*"
+          element={
+            <PrivateRoute>
+              <AppLayout />{" "}
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Home />} />
           <Route path="timetracker" element={<TimeTracker />} />
           <Route path="files" element={<Files />} />
@@ -61,30 +92,28 @@ function App() {
         <Route path="/file/*" element={<AppLayout />}>
           <Route index element={<Files />} />
           <Route path="role" element={<FileTabs />} />
-          
         </Route>
         <Route path="/time/*" element={<AppLayout />}>
- <Route index element={<Navigate to="history" replace />} /> 
-
-          <Route  index path="history"  element={<TimeTracker />} />        <Route path="approve" element={<ApproveTimelogs />} />
-         
+          <Route index element={<Navigate to="history" replace />} />
+          <Route index path="history" element={<TimeTracker />} />{" "}
+          <Route path="approve" element={<ApproveTimelogs />} />
         </Route>
         <Route path="/tickets/*" element={<AppLayout />}>
           <Route index element={Ticket} />
-          
-          <Route path ="leaveTracker" element={<LeaveTracker/>}/>
+
+          <Route path="leaveTracker" element={<LeaveTracker />} />
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
         </Route>
-         <Route path="/project/*" element={<AppLayout />}>
-           <Route index element={<Navigate to="projectDashboard" replace />} /> 
+        <Route path="/project/*" element={<AppLayout />}>
+          <Route index element={<Navigate to="projectDashboard" replace />} />
 
-          <Route  index path="projectDashboard"  element={<ProjectDashBoard />} />
+          <Route index path="projectDashboard" element={<ProjectDashBoard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projectDetailed" element={<Project />} />
 
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
         </Route>
-         <Route path="/admin/*" element={<AppLayout />}>
+        <Route path="/admin/*" element={<AppLayout />}>
           {/* <Route  index path="adminDashboard"  element={<Admin />} /> */}
           <Route path="userManagement" element={<UserManagement />} />
           <Route path="Activity Logs" element={<Project />} />

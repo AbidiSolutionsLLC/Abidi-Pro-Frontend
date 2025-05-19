@@ -1,48 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../../axios"; // Adjust path as needed
+ 
 const ResetPassword = () => {
+  const { token } = useParams();
+  const navigate = useNavigate();
+  const [isValidToken, setIsValidToken] = useState(false);
+ 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch, // watch to keep track of password
+    watch,
   } = useForm();
-
-  // Password regex for validation
-  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-  // Handle form submission
-  const onSubmit = (data) => {};
-
-  const navigate = useNavigate();
-  const handleclick = () => {
-    if (
-      watch("password") === watch("confirmPassword") &&
-      watch("password") !== "" &&
-      watch("confirmPassword") !== "" &&
-      watch("password").length >= 8 &&
-      watch("confirmPassword").length >= 8 &&
-      passwordRegex.test(watch("password")) &&
-      passwordRegex.test(watch("confirmPassword"))
-    ) {
-      navigate("/auth/login");
-    } else {
-      toast.error("Please fill in all fields.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+ 
+  const passwordRegex =
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+ 
+  useEffect(() => {
+    const verifyToken = async () => {
+      try {
+        await api.get(`/auth/verify-reset-token/${token}`);
+        setIsValidToken(true);
+      } catch (err) {
+        toast.error("Invalid or expired reset link.");
+        navigate("/auth/login");
+      }
+    };
+    verifyToken();
+  }, [token, navigate]);
+ 
+  const onSubmit = async ({ password }) => {
+    try {
+      const res = await api.post(`/auth/reset-password/${token}`, { password });
+      toast.success("Password reset successful! Redirecting...");
+      setTimeout(() => navigate("/auth/login"), 3000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Password reset failed.");
     }
   };
-
+ 
   return (
     <div className="flex items-center justify-center h-screen bg-[#274744]">
       <form
@@ -56,11 +55,14 @@ const ResetPassword = () => {
             className="w-16 h-16 rounded-full bg-white p-1"
           />
         </div>
-
+ 
+        <h2 className="text-white text-xl text-center pb-1">Reset Password</h2>
+        <hr className="w-20 mx-auto pt-5 border-orange-500 mb-4" />
+ 
         {/* Password Field */}
         <div className="relative w-full mb-4">
           <label htmlFor="password" className="block text-white mb-1">
-            Password:
+            New Password:
           </label>
           <input
             type="password"
@@ -69,7 +71,7 @@ const ResetPassword = () => {
               pattern: {
                 value: passwordRegex,
                 message:
-                  "Password must be at least 8 characters, contain at least one uppercase letter, one number, and one special character.",
+                  "Must be 8+ chars, 1 uppercase, 1 number & 1 special char.",
               },
             })}
             className="w-full p-2 pr-10 rounded bg-gray-300"
@@ -80,7 +82,7 @@ const ResetPassword = () => {
             </p>
           )}
         </div>
-
+ 
         {/* Confirm Password Field */}
         <div className="relative w-full mb-4">
           <label htmlFor="confirmPassword" className="block text-white mb-1">
@@ -101,19 +103,19 @@ const ResetPassword = () => {
             </p>
           )}
         </div>
-
-        {/* Submit Button */}
+ 
         <button
-          onClick={handleclick}
           type="submit"
           className="w-full bg-orange-400 py-2 rounded text-black"
+          disabled={!isValidToken}
         >
           Reset Password
         </button>
       </form>
-      <ToastContainer />
     </div>
   );
 };
-
+ 
 export default ResetPassword;
+ 
+ 

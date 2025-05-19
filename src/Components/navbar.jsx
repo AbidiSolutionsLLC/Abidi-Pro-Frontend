@@ -11,7 +11,9 @@ import { IoHomeOutline } from "react-icons/io5";
 import { IoTicketOutline } from "react-icons/io5";
 import { MdOutlineTimer } from "react-icons/md";
 import { TbBeach } from "react-icons/tb";
- 
+ import { GrProjects } from "react-icons/gr";
+import api from "../axios";
+import { toast } from "react-toastify";
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -59,15 +61,25 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+      toast.success("Logged out successfully");
+      navigate("/auth/login");
+    } catch (err) {
+      toast.error("Logout failed. Try again.");
+    }
+  };
  
   const navLinks = [
     { name: "Home", to: "/people", icon: IoHomeOutline },
-    { name: "Time Tracker", to: "/time", icon: MdOutlineTimer },
-    { name: "Leave Tracker", to: "/leave", icon: TbBeach },
+    { name: "Time ", to: "/time", icon: MdOutlineTimer },
+    { name: "Leave ", to: "/leave", icon: TbBeach },
     { name: "Files", to: "/file", icon: FolderIcon },
     { name: "Tickets", to: "/tickets", icon: IoTicketOutline },
-    { name: "Projects", to: "/project", icon: FolderIcon },
-    { name: "Admin Panel", to: "/admin", icon: UsersIcon },
+    { name: "Projects", to: "/project", icon: GrProjects },
+    { name: "Admin ", to: "/admin", icon: UsersIcon },
   ];
  
   return (
@@ -168,9 +180,13 @@ const Navbar = () => {
           <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
             Settings
           </Link>
-          <Link to="/auth/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-            Sign out
-          </Link>
+          <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Sign out
+                    </button>
+ 
         </div>
       )}
     </div>

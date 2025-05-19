@@ -48,7 +48,7 @@ const SubNavbar = () => {
   if (!links.length) return null;
 
   return (
-    <Navbar className="fixed top-16 z-10 max-w-full rounded-none px-4 py-2 lg:px-8 lg:py-4 bg-background shadow-none border-none">
+    <Navbar className="fixed top-16 z-10 max-w-full rounded-nonemy-2 px-4 my-4 py-2 lg:px-8 lg:py-4 bg-background shadow-none border-none">
       <div className="flex items-center justify-between text-blue-gray-900">
         {/* Check In/Out Button */}
         <Button
