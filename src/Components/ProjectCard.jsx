@@ -15,7 +15,7 @@ const ProjectCard = ({ title, value, badgeColor, icon }) => {
                 </div>
 
                 {/* Divider */}
-                <div className="w-px h-16 bg-gray-300 mx-2"></div>
+                <div className="w-px h-14 bg-gray-300 mx-2"></div>
 
                 <div className="text-center w-1/2">
                     <p className="text-sm text-gray-800 whitespace-nowrap"> Available : <span className="font-semibold">{value}</span> </p>

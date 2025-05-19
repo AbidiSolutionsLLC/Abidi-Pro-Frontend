@@ -25,7 +25,7 @@ const Projects = () => {
       <div className='bg-white px-8 py-4 font-semibold rounded-lg'>Projects</div>
        {/* attendance summary card view horizontal */}
        <div className='my-6'>
-           <ProjectsTable  openModal={()=>setShowModal(true)} projects={dummyProjects} />
+           <ProjectsTable projects={dummyProjects} />
         </div>
         <NewProjectDrawer  isOpen={showModal} onClose={() => setShowModal(false)}/>
       </div>    

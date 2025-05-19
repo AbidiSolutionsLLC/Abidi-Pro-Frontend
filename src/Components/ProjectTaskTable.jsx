@@ -1,24 +1,24 @@
-import { FaSortDown, FaPlus } from "react-icons/fa";
 
-const ProjectTasksTable = ({ tasks, openModal }) => {
+const ProjectTasksTable = ({ tasks ,children}) => {
   return (
     <div className="bg-white rounded-xl shadow p-4 w-full">
       {/* Top Bar: Sort By & Add Task */}
-      <div className="flex justify-between items-center mb-4">
+      {/* <div className="flex justify-between items-center mb-4">
         <button className="flex items-center gap-2 bg-[#86B2AA] text-white text-sm px-4 py-2 rounded-md hover:brightness-110">
           Sort By <FaSortDown className="text-xs" />
         </button>
         <button onClick={()=>openModal()} className="flex items-center gap-2 bg-[#86B2AA] text-white text-sm px-4 py-2 rounded-md hover:brightness-110">
           <FaPlus /> Add Task
         </button>
-      </div>
+      </div> */}
+      {children}
 
       {/* Tasks Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left border-separate border-spacing-0">
           <thead className="bg-gray-100">
             <tr>
-              {["Task Name", "Description", "Start Date", "End Date", "Assigned By", "Priority", "Status"].map((header, index) => (
+              {["Task Name", "Description", "Start Date", "End Date", "Assigned By","Assigned To", "Priority", "Status"].map((header, index) => (
                 <th
                   key={index}
                   className="p-3 font-medium text-gray-700 border-r last:border-none border-gray-300"
@@ -36,6 +36,7 @@ const ProjectTasksTable = ({ tasks, openModal }) => {
                   <td className="p-3">{task.description}</td>
                   <td className="p-3">{task.startDate}</td>
                   <td className="p-3">{task.endDate}</td>
+                  <td className="p-3">{task.assignedBy}</td>
                   <td className="p-3">{task.assignedBy}</td>
                   <td className="p-3">{task.priority}</td>
                   <td className="p-3">{task.status}</td>

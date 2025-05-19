@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import 'react-datepicker/dist/react-datepicker.css';
+import './index.css'; // your Tailwind styles
 
 // Layouts
 import AppLayout from "./Layout/AppLayout";
@@ -29,7 +31,10 @@ import PublicRoute from "./Components/PublicRoute";
 import "react-toastify/dist/ReactToastify.css";
 import VerifyOtp from "./Pages/login/VerifyOTP";
 import Ticket from "./Pages/Tickets/Ticket";
-import AdminTickets from "./Pages/Tickets/AdminTickets";
+import AdminTickets from "./Pages/Tickets/AdminTickets";import AdminDashBoard from "./Pages/Admin/AdminDashBoard";
+import ActivityLogs from "./Pages/Admin/ActivityLogs";
+import MyTask from "./Pages/Projects/MyTask";
+
 function App() {
   return (
     <>
@@ -110,13 +115,16 @@ function App() {
           <Route index path="projectDashboard" element={<ProjectDashBoard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projectDetailed" element={<Project />} />
+          <Route path="myTask" element={<MyTask />} />
+
 
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
         </Route>
-        <Route path="/admin/*" element={<AppLayout />}>
-          {/* <Route  index path="adminDashboard"  element={<Admin />} /> */}
+         <Route path="/admin/*" element={<AppLayout />}>
+          <Route index element={<Navigate to="adminDashboard" replace />} />  // ✅ Redirect
+          <Route  index path="adminDashboard"  element={<AdminDashBoard />} />
           <Route path="userManagement" element={<UserManagement />} />
-          <Route path="Activity Logs" element={<Project />} />
+          <Route path="logs" element={<ActivityLogs />} />
         </Route>
       </Routes>
     </>

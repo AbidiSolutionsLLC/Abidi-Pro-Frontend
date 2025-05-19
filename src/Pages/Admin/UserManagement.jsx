@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CreateUserModal from "../../Components/CreateUserModal";
+import UserManagementTable from "../../Components/UserManagementTable";
  
 const UserManagement = () => {
   const [users, setUsers] = useState([
@@ -42,74 +43,15 @@ const UserManagement = () => {
   };
  
   return (
-    <div className="min-h-screen bg-[#dce3f0] p-4 m-6 rounded-lg shadow-md">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6 bg-primary px-6 py-3 rounded-md mx-6">
-        <h2 className="text-xl font-semibold text-white">User Management</h2>
-        <button
-          onClick={handleCreateUser}
-          className="text-white px-5 py-2 font-semibold"
-        >
-          Create User
-        </button>
-      </div>
- 
-      {/* Sort Dropdown */}
-      <div className="flex justify-end px-6 mb-4">
-        <select
-          className="px-4 py-2 rounded-md border text-sm"
-          onChange={handleSort}
-          value={sortKey}
-        >
-          <option value="">Sort By</option>
-          <option value="name">Name</option>
-          <option value="department">Department</option>
-          <option value="role">Role</option>
-        </select>
-      </div>
- 
-      {/* Table */}
-      <div className="px-6">
-        <div className="overflow-x-auto rounded-lg shadow bg-white">
-          <table className="min-w-full table-auto text-sm text-left text-gray-600">
-            <thead className="bg-primary text-white">
-              <tr>
-                <th className="px-4 py-3">ID</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Department</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-4 py-3">{user.id}</td>
-                  <td className="px-4 py-3">{user.name}</td>
-                  <td className="px-4 py-3">{user.email}</td>
-                  <td className="px-4 py-3">{user.department}</td>
-                  <td className="px-4 py-3">{user.role}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.status === "Active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className='px-4 py-2 '>
+      {/* roundercorner main Content */}
+      <div className='p-8 rounded-xl bg-primary'>
+      <div className='bg-white px-8 py-4 font-semibold rounded-lg'>User Management</div>
+       {/* attendance summary card view horizontal */}
+       <div className='my-6'>
+           <UserManagementTable  openModal={()=>setIsModalOpen(true)} users={users} />
         </div>
-      </div>
+    </div>
  
       {/* Modal Component */}
       <CreateUserModal

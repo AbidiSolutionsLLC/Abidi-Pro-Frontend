@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import ProjectTasksTable from '../../Components/ProjectTaskTable'
 import AddTaskDrawer from '../../Components/addTaskModal';
 import { FaSortDown, FaPlus } from "react-icons/fa";
 import SearchBar from '../../Components/SearchBar';
+import MyTasksTable from '../../Components/MyTaskTable';
 
-const Project = () => {
-    const dummyTask= [
+const MyTask = () => {
+    const [tasks,setTasks]= useState([
   {
     "name": "Design Homepage",
     "description": "Create wireframes & UI for homepage.",
@@ -51,24 +51,22 @@ const Project = () => {
     "priority": "Medium",
     "status": "Pending"
   }
-]
+])
 
   const [showModal, setShowModal] = useState(false);
 const CustomTopBar = ({ openModal }) => {
   return (
     <div className="flex justify-between items-center mb-4">
         <SearchBar/>
-        <div className="flex justify-end items-center ">
-      <button className="flex items-center mr-6 gap-2 bg-[#86B2AA] text-white text-sm px-4 py-2 rounded-md hover:brightness-110">
+      <button className="flex items-center gap-2 bg-[#86B2AA] text-white text-sm px-4 py-2 rounded-md hover:brightness-110">
         Sort By <FaSortDown className="text-xs" />
       </button>
-      <button
+      {/* <button
         onClick={openModal}
         className="flex items-center gap-2 bg-[#86B2AA] text-white text-sm px-4 py-2 rounded-md hover:brightness-110"
       >
         <FaPlus /> Add Task
-      </button>
-      </div>
+      </button> */}
     </div>
   );
 };
@@ -80,13 +78,14 @@ const CustomTopBar = ({ openModal }) => {
       <div className='bg-white px-8 py-4 font-semibold rounded-lg'>Project</div>
        {/* attendance summary card view horizontal */}
        <div className='my-6'>
-<ProjectTasksTable tasks={dummyTask} >
+           <MyTasksTable setTasks={setTasks} tasks={tasks} >
             <CustomTopBar openModal={()=>setShowModal(true)}/>
-           </ProjectTasksTable>        </div>
+           </MyTasksTable>
+        </div>
       <AddTaskDrawer isOpen={showModal} onClose={() => setShowModal(false)} />
       </div>    
     </div>
   )
 }
 
-export default Project
+export default MyTask

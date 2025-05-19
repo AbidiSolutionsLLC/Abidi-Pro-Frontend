@@ -20,7 +20,8 @@ const StatusDropDown = ({ status, onChange }) => {
   return (
     <div className="relative inline-block text-left">
       <div
-        onClick={toggleDropdown}
+        onClick={(e)=>{e.stopPropagation();
+            toggleDropdown()}}
         className={`cursor-pointer px-3 py-1 rounded-sm text-center ${statusColor[status] || 'bg-slate-500 text-white'}`}
       >
         {status}
@@ -31,7 +32,9 @@ const StatusDropDown = ({ status, onChange }) => {
           {statuses.map((s) => (
             <div
               key={s}
-              onClick={() => handleStatusChange(s)}
+              onClick={(e) =>{e.stopPropagation();
+                 handleStatusChange(s)}
+                }
               className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
             >
               {s}
