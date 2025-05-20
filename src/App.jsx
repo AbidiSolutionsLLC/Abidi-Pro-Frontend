@@ -1,11 +1,11 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import 'react-datepicker/dist/react-datepicker.css';
 import './index.css'; // your Tailwind styles
-
+ 
 // Layouts
 import AppLayout from "./Layout/AppLayout";
 import AuthLayout from "./layout/AuthLayout";
-
+ 
 // Pages
 import ThemeSelector from "./Pages/ThemeSelector";
 import Login from "./Pages/login/Login";
@@ -34,8 +34,10 @@ import Ticket from "./Pages/Tickets/Ticket";
 import AdminTickets from "./Pages/Tickets/AdminTickets";import AdminDashBoard from "./Pages/Admin/AdminDashBoard";
 import ActivityLogs from "./Pages/Admin/ActivityLogs";
 import MyTask from "./Pages/Projects/MyTask";
-
+import useAutoLogin from "./Hooks/useAutoLogin";
+ 
 function App() {
+    useAutoLogin();
   return (
     <>
       <ToastContainer
@@ -51,7 +53,7 @@ function App() {
       <Routes>
         {/* Redirect to login by default */}
         <Route path="/" element={<Navigate to="/auth/login" />} />
-
+ 
         {/* Auth routes */}
         <Route
           path="/auth"
@@ -66,10 +68,10 @@ function App() {
           <Route path="reset-password" element={<ResetPassword />} />
           <Route path="verify-otp" element={<VerifyOtp />} />
         </Route>
-
+ 
         {/* Theme Selector */}
         <Route path="/theme-selector" element={<ThemeSelector />} />
-
+ 
         {/* Main App Routes with AppLayout and SubNavbar */}
         <Route
           path="/people/*"
@@ -87,7 +89,7 @@ function App() {
           <Route path="leaveTracker" element={<LeaveTracker />} />
           <Route path="leaveTrackerAdmin" element={<LeaveTrackerAdmin />} />
         </Route>
-
+ 
         <Route path="/leave/*" element={<AppLayout />}>
           <Route index element={<Navigate to="/leave/summary" />} />
           <Route index path="summary" element={<LeaveTracker />} />
@@ -111,13 +113,13 @@ function App() {
         </Route>
         <Route path="/project/*" element={<AppLayout />}>
           <Route index element={<Navigate to="projectDashboard" replace />} />
-
+ 
           <Route index path="projectDashboard" element={<ProjectDashBoard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projectDetailed" element={<Project />} />
           <Route path="myTask" element={<MyTask />} />
-
-
+ 
+ 
           {/* <Route path ="leaveTrackerAdmin" element={<LeaveTrackerAdmin/>}/> */}
         </Route>
          <Route path="/admin/*" element={<AppLayout />}>
@@ -130,5 +132,6 @@ function App() {
     </>
   );
 }
-
+ 
 export default App;
+ 
