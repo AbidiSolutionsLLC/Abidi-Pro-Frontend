@@ -99,7 +99,8 @@ function App() {
         </Route>
 
         <Route path="/file/*" element={<AppLayout />}>
-          <Route index element={<Files />} />
+        <Route index element={<Navigate to="/file/shared" />} />
+          <Route index path="shared" element={<Files />} />
           <Route path="role" element={<Role />} />
           <Route path="upload" element={<UploadDocument />} />
         </Route>

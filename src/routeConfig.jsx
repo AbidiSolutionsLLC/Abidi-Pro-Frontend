@@ -25,8 +25,9 @@ export const moduleConfigs = {
     basePath: "/file",
     subNavbarKey: "file",
     links: [
-      { name: "Shared with me", path: "/file" },
-      { name: "Shared with Role", path: "/role" },
+        { name: "Shared with me", path: "/file/shared" },
+      { name: "Shared with Role", path: "/file/role" },
+      {name: "Upload Document", path:"/file/upload"}
     ],
   },
   time: {
