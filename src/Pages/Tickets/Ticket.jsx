@@ -4,7 +4,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 import RaiseTicketModal from "../../Pages/Tickets/RaiseTicketModal";
 import ViewTicketDetailsModal from "../../Pages/Tickets/ViewTicketDetailsModal";
-const Ticket  = () => {
+const Ticket = () => {
   const [tickets, setTickets] = useState([
     {
       id: "#001",
@@ -80,10 +80,10 @@ const Ticket  = () => {
       <div className="text-text bg-background rounded-lg shadow-md p-4 md:p-6 min-h-[700px] ">
         {/* Header Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <div className="flex items-center">
+          <div className="flex items-center w-full md:w-auto">
             <span className="mr-2">Show</span>
             <select
-              className="border text-tblBody rounded px-2 py-1 mr-2"
+              className="border text-tblBody rounded px-2 py-1 mr-2 flex-shrink-0"
               value={entriesPerPage}
               onChange={(e) => setEntriesPerPage(Number(e.target.value))}
             >
@@ -96,8 +96,8 @@ const Ticket  = () => {
             <span>entries</span>
           </div>
 
-          <div className="flex gap-2 w-full md:w-auto">
-            <div className="relative flex-grow md:flex-grow-0">
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            <div className="relative flex-grow md:flex-grow-0 w-full md:w-auto">
               <input
                 type="text"
                 placeholder="Search..."
@@ -109,14 +109,17 @@ const Ticket  = () => {
             </div>
 
             <button
-              className="bg-primary text-text px-4 py-2 rounded whitespace-nowrap"
+              className="bg-primary text-text px-4 py-2 rounded whitespace-nowrap w-full md:w-auto"
               onClick={() => setShowModal(true)}
             >
               Raise a Ticket
             </button>
+
+            {/* Only show menu button on small screens */}
             <button
-              className="md:hidden border rounded p-2"
+              className="md:hidden border rounded p-2 w-full flex justify-center"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -146,17 +149,27 @@ const Ticket  = () => {
                   key={ticket.id}
                   className="bg-white hover:bg-gray-50 text-tblBody border-t"
                 >
-                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">{ticket.id}</td>
-                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">{ticket.date}</td>
-                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">{ticket.subject}</td>
-                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">{ticket.email || "—"}</td>
+                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">
+                    {ticket.id}
+                  </td>
+                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">
+                    {ticket.date}
+                  </td>
+                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">
+                    {ticket.subject}
+                  </td>
+                  <td className="px-2 py-3 md:px-4 whitespace-nowrap">
+                    {ticket.email || "—"}
+                  </td>
                   <td className="px-2 py-3 md:px-4 whitespace-nowrap">
                     {ticket.attachment ? (
                       <span className="text-green-600 text-sm bg-green-200 cursor-pointer rounded-3xl p-1">
                         {ticket.attachment.name}
                       </span>
                     ) : (
-                      <span className="text-gray-700 tex-sm bg-gray-300 p-1 rounded-3xl w-full">No file</span>
+                      <span className="text-gray-700 tex-sm bg-gray-300 p-1 rounded-3xl w-full">
+                        No file
+                      </span>
                     )}
                   </td>
                   <td className="px-2 py-3 md:px-4">
@@ -251,6 +264,6 @@ const Ticket  = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Ticket;
