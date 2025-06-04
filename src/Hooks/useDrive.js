@@ -12,7 +12,7 @@ export function useFolderContents(folder) {
   const reload = useCallback(async () => {
     setLoading(true); setError(null)
     try {
-      console.log(folderId)
+      console.log(folderId,"hello")
       const { data } = await api.get(`/files/folders/${folderId || 'root'}/contents`)
       console.log("getting files and folder",data)
       setFolders(data.folders)
@@ -204,7 +204,7 @@ export function useFolderDeleter() {
   const softDelete = useCallback(async (folderId) => {
     setLoading(true); setError(null);
     try {
-      const { data } = await api.patch(`/files/folders/${folderId}/soft-delete`);
+      const { data } = await api.patch(`/files/folders/folders/${folderId}/soft-delete`);
       return data;
     } catch (e) {
       setError(e);

@@ -1,106 +1,137 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Drawer, TextField } from '@mui/material';
-import { FiUpload } from 'react-icons/fi';
-import { Spin, Alert } from 'antd';
-import FolderGrid from './FolderGrid';
-import OpenFolderScreen from './OpenFolderScreen';
-import { useFolderContents, useFileUploader, useFolderCreator, useFileDeleter, useFolderDeleter } from '../../Hooks/useDrive';
-import { toast } from 'react-toastify';
-import { IoEllipsisVertical } from "react-icons/io5";
-import api from '../../axios';
-import { select } from '@material-tailwind/react';
+"use client"
+
+import { useState } from "react"
+import { useSelector } from "react-redux"
+import { Drawer, TextField, Menu, MenuItem, IconButton } from "@mui/material"
+import { FiUpload } from "react-icons/fi"
+import { Spin, Alert } from "antd"
+import {
+  useFolderContents,
+  useFileUploader,
+  useFolderCreator,
+  useFileDeleter,
+  useFolderDeleter,
+} from "../../Hooks/useDrive"
+import { toast } from "react-toastify"
+import { IoEllipsisVertical } from "react-icons/io5"
 
 const UploadDocument = () => {
-  const [folderStack, setFolderStack] = useState([]); // Stack to hold navigation path
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [folderName, setFolderName] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [folderMenuOpen, setFolderMenuOpen] = useState(-1);
-  const [fileMenuOpen, setFileMenuOpen] = useState(-1);
-  const data = useSelector((state) => state);
-  const { user } = data?.auth;
+  const [folderStack, setFolderStack] = useState([]) // Stack to hold navigation path
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [folderName, setFolderName] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [folderMenuAnchor, setFolderMenuAnchor] = useState(null)
+  const [fileMenuAnchor, setFileMenuAnchor] = useState(null)
+  const [selectedFolderId, setSelectedFolderId] = useState(null)
+  const [selectedFileId, setSelectedFileId] = useState(null)
 
-  const currentFolder = folderStack[folderStack.length - 1] || { id: 'root', name: 'Root' };
-  console.log(folderStack)
-  const folderId = currentFolder._id;
-  const folderPath = `users/${user.id}/${folderStack.map(f => f.id).join('/') || 'root'}`;
+  const data = useSelector((state) => state)
+  const { user } = data?.auth
 
-  const { folders, files, loading, error, reload } = useFolderContents(folderId);
-  const { create, loading: creating, error: createErr } = useFolderCreator();
-  const { upload, loading: uploading, error: uploadErr } = useFileUploader();
-  const { softDelete: deleteFile ,loading:fileDeleteLoading,error:fileDeleteError} = useFileDeleter();
-const { softDelete: deleteFolder,loading:folderDeleteLoading,error:folderDeleteError } = useFolderDeleter();
-  const toggleDrawer = (open) => () => setDrawerOpen(open);
+  const currentFolder = folderStack[folderStack.length - 1] || { id: "root", name: "Root" }
+  const folderId = currentFolder._id
+  const folderPath = `users/${user.id}/${folderStack.map((f) => f.id).join("/") || "root"}`
+
+  const { folders, files, loading, error, reload } = useFolderContents(folderId)
+  const { create, loading: creating, error: createErr } = useFolderCreator()
+  const { upload, loading: uploading, error: uploadErr } = useFileUploader()
+  const { softDelete: deleteFile, loading: fileDeleteLoading, error: fileDeleteError } = useFileDeleter()
+  const { softDelete: deleteFolder, loading: folderDeleteLoading, error: folderDeleteError } = useFolderDeleter()
+
+  const toggleDrawer = (open) => () => setDrawerOpen(open)
 
   const handleNewFolder = async () => {
+    console.log("creating folder", user._id + "fff" + folderName)
     if (!folderName.trim()) {
-      toast.error("Folder name is required");
-      return;
+      toast.error("Folder name is required")
+      return
     }
     try {
-      await create({ name: folderName, parentId: folderId, ownerId: user.id });
-      setFolderName('');
-      setDrawerOpen(false);
-      reload();
+      await create({ name: folderName, parentId: folderId, ownerId: user._id })
+      setFolderName("")
+      setDrawerOpen(false)
+      reload()
     } catch (err) {
-      toast.error("Failed to create folder");
+      toast.error("Failed to create folder")
     }
-  };
+  }
 
   const handleFileChange = async (e) => {
-    console.log("uploading file",e.target.files[0])
-    const file = e.target.files[0];
-    if (!file) return;
+    console.log("uploading file", e.target.files[0])
+    const file = e.target.files[0]
+    if (!file) return
     try {
-      await upload({ file, folderId, folderPath });
-      reload();
+      await upload({ file, folderId, folderPath })
+      reload()
     } catch (err) {
-      toast.error("File upload failed");
+      toast.error("File upload failed")
     }
-  };
+  }
 
   const handleOpenFolder = (folder) => {
-    setFolderStack([...folderStack, folder]);
-  };
-const handleDeleteFile = async (fileId) => {
-  if (!window.confirm("Are you sure you want to delete this file?")) return;
-  try {
-    await deleteFile(fileId);
-    toast.success("File deleted");
-    reload(); // 👈 refresh contents
-  } catch {
-    toast.error("Failed to delete file");
+    setFolderStack([...folderStack, folder])
   }
-};
 
-const handleDeleteFolder = async (folderId) => {
-  console.log('deleting folder')
-  if (!window.confirm("Are you sure you want to delete this folder?")) return;
-  try {
-    await deleteFolder(folderId);
-    toast.success("Folder deleted");
-    reload(); // 👈 refresh contents
-  } catch {
-    toast.error("Failed to delete folder");
+  const handleDeleteFile = async (fileId) => {
+    console.log("Attempting to delete file:", fileId)
+    if (!window.confirm("Are you sure you want to delete this file?")) return
+
+    try {
+      await deleteFile(fileId)
+      toast.success("File deleted")
+      reload()
+      handleCloseFileMenu()
+    } catch (error) {
+      console.error("Delete file error:", error)
+      toast.error("Failed to delete file")
+    }
   }
-};
+
+  const handleDeleteFolder = async (folderId) => {
+    console.log("Attempting to delete folder:", folderId)
+    if (!window.confirm("Are you sure you want to delete this folder?")) return
+
+    try {
+      await deleteFolder(folderId)
+      toast.success("Folder deleted")
+      reload()
+      handleCloseFolderMenu()
+    } catch (error) {
+      console.error("Delete folder error:", error)
+      toast.error("Failed to delete folder")
+    }
+  }
 
   const handleGoBack = () => {
-    if (folderStack.length === 0) return;
-    setFolderStack(folderStack.slice(0, -1));
-  };
-    // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-     setFolderMenuOpen(-1)
-     setFileMenuOpen(-1)
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (folderStack.length === 0) return
+    setFolderStack(folderStack.slice(0, -1))
+  }
 
-  if (error) return <Alert message={error.message} type="error" />;
+  // Folder menu handlers
+  const handleFolderMenuClick = (event, folderId) => {
+    event.stopPropagation()
+    setFolderMenuAnchor(event.currentTarget)
+    setSelectedFolderId(folderId)
+  }
+
+  const handleCloseFolderMenu = () => {
+    setFolderMenuAnchor(null)
+    setSelectedFolderId(null)
+  }
+
+  // File menu handlers
+  const handleFileMenuClick = (event, fileId) => {
+    event.stopPropagation()
+    setFileMenuAnchor(event.currentTarget)
+    setSelectedFileId(fileId)
+  }
+
+  const handleCloseFileMenu = () => {
+    setFileMenuAnchor(null)
+    setSelectedFileId(null)
+  }
+
+  if (error) return <Alert message={error.message} type="error" />
 
   return (
     <>
@@ -120,7 +151,7 @@ const handleDeleteFolder = async (folderId) => {
             disabled={creating}
             className="mt-2 bg-[#497a71] text-white text-sm py-2 rounded-md hover:bg-[#99c7be] hover:text-black"
           >
-            {creating ? 'Creating…' : 'Create Folder'}
+            {creating ? "Creating…" : "Create Folder"}
           </button>
           {createErr && <Alert message={createErr.message} type="error" />}
         </div>
@@ -149,7 +180,10 @@ const handleDeleteFolder = async (folderId) => {
             </div>
             <div className="flex items-center gap-2">
               <input type="file" onChange={handleFileChange} className="hidden" id="file-upload" />
-              <label htmlFor="file-upload" className="cursor-pointer bg-[#497a71] text-white text-sm px-4 py-2 rounded-md hover:bg-[#99c7be] hover:text-black">
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer bg-[#497a71] text-white text-sm px-4 py-2 rounded-md hover:bg-[#99c7be] hover:text-black"
+              >
                 Upload Files
               </label>
               <button
@@ -159,10 +193,7 @@ const handleDeleteFolder = async (folderId) => {
                 <FiUpload /> New Folder
               </button>
               {folderStack.length > 0 && (
-                <button
-                  onClick={handleGoBack}
-                  className="bg-gray-300 text-sm px-4 py-2 rounded-md hover:bg-gray-400"
-                >
+                <button onClick={handleGoBack} className="bg-gray-300 text-sm px-4 py-2 rounded-md hover:bg-gray-400">
                   Go Back
                 </button>
               )}
@@ -172,96 +203,107 @@ const handleDeleteFolder = async (folderId) => {
 
         {uploadErr && <Alert message={uploadErr.message} type="error" />}
 
-        <Spin spinning={loading||uploading||creating||fileDeleteLoading||folderDeleteLoading}>
-          
-          {/* <div className="mb-4 overflow-x-auto">
-            <FolderGrid
-              folders={folders.filter(f =>
-                f.name.toLowerCase().includes(searchTerm.toLowerCase())
-              )}
-              onOpenFolder={handleOpenFolder}
-            />
-            {/* You can also render files here */}
-          {/* </div> */}
+        <Spin spinning={loading || uploading || creating || fileDeleteLoading || folderDeleteLoading}>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-  {/* Folders */}
-  {folders.map((folder,index) => (
-    <div key={folder.id} onClick={(e) => {
-      e.stopPropagation()
-      handleOpenFolder(folder)
-    }}
-     className="flex justify-between items-center bg-white rounded p-4 shadow cursor-pointer">
-      📁 {folder.name}
-       <div className='relative'>
-      <IoEllipsisVertical onClick={(e)=>{
-        e.stopPropagation();
-        setFolderMenuOpen(t=>t==index?-1:index)
+            {/* Folders */}
+            {folders.map((folder) => (
+              <div
+                key={folder._id}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleOpenFolder(folder)
+                }}
+                className="flex justify-between items-center bg-white rounded p-4 shadow cursor-pointer"
+              >
+                📁 {folder.name}
+                <IconButton size="small" onClick={(e) => handleFolderMenuClick(e, folder._id)} className="p-1">
+                  <IoEllipsisVertical />
+                </IconButton>
+              </div>
+            ))}
 
-
-      }} />
-      {
-        folderMenuOpen==index&&(
-           <div  className="absolute left-4 top-8 z-50 bg-white border border-gray-200 rounded shadow w-32">
-          <button
-            onClick={(e) => { 
-              e.stopPropagation()
-              setFolderMenuOpen(-1);  
-            }}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-          >
-            Update
-          </button>
-          <button
-            onClick={() => { setFolderMenuOpen(-1); handleDeleteFolder(folder._id); }}
-            className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-          >
-            Delete
-          </button>
-        </div>
-        )
-      }
-      </div>
-    </div>
-  ))}
-
-  {/* Files */}
-  {files.map((file,index) => (
-    <div key={file.id} className="flex justify-between items-center bg-white rounded p-4 shadow">
-      📄 {file.name}
-      <div className='relative'>
-      <IoEllipsisVertical onClick={(e)=>{
-        e.stopPropagation()
-        setFileMenuOpen(t=>t==index?-1:index)}} />
- {
-        fileMenuOpen==index&&(
-           <div  className="absolute left-4 top-2 z-50 bg-white border border-gray-200 rounded shadow w-32">
-          <button
-            onClick={(e) => { 
-              e.stopPropagation()
-              setFolderMenuOpen(-1);  
-            }}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-          >
-            Update
-          </button>
-          <button
-            onClick={() => { setFileMenuOpen(-1); handleDeleteFile(file?._id); }}
-            className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-          >
-            Delete
-          </button>
-        </div>
-        )
-      }
-      </div>
-    </div>
-  ))}
-</div>
+            {/* Files */}
+            {files.map((file) => (
+              <div key={file._id} className="flex justify-between items-center bg-white rounded p-4 shadow">
+                📄 {file.name}
+                <IconButton size="small" onClick={(e) => handleFileMenuClick(e, file._id)} className="p-1">
+                  <IoEllipsisVertical />
+                </IconButton>
+              </div>
+            ))}
+          </div>
         </Spin>
 
+        {/* Folder Menu */}
+        <Menu
+          anchorEl={folderMenuAnchor}
+          open={Boolean(folderMenuAnchor)}
+          onClose={handleCloseFolderMenu}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              console.log("Update folder:", selectedFolderId)
+              handleCloseFolderMenu()
+              // TODO: Trigger update modal or logic here
+            }}
+          >
+            Update
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              console.log("Delete folder clicked:", selectedFolderId)
+              handleDeleteFolder(selectedFolderId)
+            }}
+            sx={{ color: "red" }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+
+        {/* File Menu */}
+        <Menu
+          anchorEl={fileMenuAnchor}
+          open={Boolean(fileMenuAnchor)}
+          onClose={handleCloseFileMenu}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              console.log("Update file:", selectedFileId)
+              handleCloseFileMenu()
+              // TODO: Trigger update modal or logic here
+            }}
+          >
+            Update
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              console.log("Delete file clicked:", selectedFileId)
+              handleDeleteFile(selectedFileId)
+            }}
+            sx={{ color: "red" }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default UploadDocument;
+export default UploadDocument
