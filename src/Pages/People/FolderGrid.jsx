@@ -1,8 +1,9 @@
 const FolderGrid = ({ folders, searchTerm, onOpenFolder }) => {
   const filtered =
     folders?.filter((f) =>
-      f.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) ?? [];
+      // f.name.toLowerCase().includes(searchTerm.toLowerCase())
+true
+  ) ?? [];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 w-full">
