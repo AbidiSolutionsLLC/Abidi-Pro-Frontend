@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { silentRefresh } from "../Store/authSlice";
+import { silentRefresh } from "../slices/authSlice";
 
 const useTokenRefresh = () => {
   const dispatch = useDispatch();

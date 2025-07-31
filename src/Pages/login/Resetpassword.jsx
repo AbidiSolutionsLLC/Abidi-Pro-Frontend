@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
-import api from "../../axios"; // Adjust path if needed
+import api from "../../axios";
  
 const ResetPassword = () => {
   const { token } = useParams();
@@ -19,18 +19,20 @@ const ResetPassword = () => {
   const passwordRegex =
     /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
  
-  useEffect(() => {
-    const verifyToken = async () => {
-      try {
-        await api.get(`/auth/verify-reset-token/${token}`);
-        setIsValidToken(true);
-      } catch (err) {
-        toast.error("Invalid or expired reset link.");
-        navigate("/auth/login");
-      }
-    };
-    verifyToken();
-  }, [token, navigate]);
+useEffect(() => {
+  const verifyToken = async () => {
+    try {
+      const decodedToken = decodeURIComponent(token);
+      await api.get(`/auth/verify-reset-token/${decodedToken}`);
+      setIsValidToken(true);
+    } catch (err) {
+      console.error('Token verification error:', err);
+      toast.error("Invalid or expired reset link.");
+      navigate("/auth/login");
+    }
+  };
+  verifyToken();
+}, [token, navigate]);
  
   const onSubmit = async ({ password }) => {
     try {
