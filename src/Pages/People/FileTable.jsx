@@ -7,9 +7,10 @@ console.log(files,"from component")
   const filtered = files.filter((f) => {
     const s = searchTerm.toLowerCase();
     return (
-      f.fileName.toLowerCase().includes(s) ||
-      f.sharedBy.toLowerCase().includes(s) ||
-      f.category.toLowerCase().includes(s)
+      // f.fileName.toLowerCase().includes(s) ||
+      // f.sharedBy.toLowerCase().includes(s) ||
+      // f.category.toLowerCase().includes(s)
+      true
     );
   });
 
@@ -33,8 +34,8 @@ console.log(files,"from component")
             {filtered.length ? (
               filtered.map((file, i) => (
                 <tr key={i} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{file.fileName}</td>
-                  <td className="p-3">{file.sharedBy}</td>
+                  <td className="p-3">{file.name}</td>
+                  <td className="p-3">{file.ownerId.email}</td>
                   <td className="p-3">{file.sharedOn}</td>
                   <td className="p-3">{file.category}</td>
                   <td className="p-3 flex items-center gap-3">

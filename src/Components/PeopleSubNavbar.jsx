@@ -6,7 +6,7 @@ import { moduleConfigs } from "../routeConfig";
 import { useTimeLog } from "../Pages/People/TimeLogContext";
 import CircularProgress from '@mui/material/CircularProgress';
 import { toast } from "react-toastify";
-import { setError } from "../api/attendanceTimer";
+import { setError } from "../slices/attendanceTimer";
 import { useDispatch, useSelector } from "react-redux";
 
 const SubNavbar = () => {

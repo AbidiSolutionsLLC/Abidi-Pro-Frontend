@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import api from "../../axios";
 import { useDispatch } from "react-redux";
-import { loginInitiated } from "../../Store/authSlice";
+import { loginInitiated } from "../../slices/authSlice";
  
 const Login = () => {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { store } from "./Store";
-import { logoutUser, silentRefresh } from "./Store/authSlice";
+import { logoutUser, silentRefresh } from "./slices/authSlice";
 
 const api = axios.create({
   baseURL: "http://localhost:4000/api/web",

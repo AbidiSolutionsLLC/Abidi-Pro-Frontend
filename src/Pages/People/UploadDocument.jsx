@@ -1,59 +1,172 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Drawer, TextField } from '@mui/material';
-import { FiUpload } from 'react-icons/fi';
-import { Spin, Alert } from 'antd';
+"use client"
 
-import FolderGrid from './FolderGrid';
-import OpenFolderScreen from './OpenFolderScreen';
-import { useFolderContents, useFileUploader, useFolderCreator } from '../../Hooks/useDrive';
-import { toast } from 'react-toastify';
+import { useState } from "react"
+import { useSelector } from "react-redux"
+import { Drawer, TextField, Menu, MenuItem, IconButton } from "@mui/material"
+import { FiUpload } from "react-icons/fi"
+import { Spin, Alert } from "antd"
+import {
+  useFolderContents,
+  useFileUploader,
+  useFolderCreator,
+  useFileDeleter,
+  useFolderDeleter,
+  useFileDownloader,
+} from "../../Hooks/useDrive"
+import { toast } from "react-toastify"
+import { IoEllipsisVertical } from "react-icons/io5"
 
 const UploadDocument = () => {
-  const [openedFolder, setOpenedFolder] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [folderName, setFolderName] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [folderStack, setFolderStack] = useState([]) // Stack to hold navigation path
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [folderName, setFolderName] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [folderMenuAnchor, setFolderMenuAnchor] = useState(null)
+  const [fileMenuAnchor, setFileMenuAnchor] = useState(null)
+  const [selectedFolderId, setSelectedFolderId] = useState(null)
+  const [selectedFileId, setSelectedFileId] = useState(null)
 
-  const data = useSelector((state) => state);
-  const { user } = data?.auth;
+  const data = useSelector((state) => state)
+  const { user } = data?.auth
+  const currentFolder = folderStack[folderStack.length - 1] || { id: "root", name: "Root" }
+  const folderId = currentFolder._id
+  const folderPath = `users/${user.id}/${folderStack.map((f) => f.id).join("/") || "root"}`
 
-  const folderId = openedFolder?.id || 'root';
-  const folderPath = `users/${user.id}/${folderId}`;
-
-  const { folders, files, loading, error, reload } = useFolderContents(folderId);
-  const { create, loading: creating, error: createErr } = useFolderCreator();
-  const { upload, loading: uploading, error: uploadErr } = useFileUploader();
-
-  const toggleDrawer = (open) => () => setDrawerOpen(open);
+  const { folders, files, loading, error, reload } = useFolderContents(folderId)
+  const { create, loading: creating, error: createErr } = useFolderCreator()
+  const { upload, loading: uploading, error: uploadErr } = useFileUploader()
+  const { softDelete: deleteFile, loading: fileDeleteLoading, error: fileDeleteError } = useFileDeleter()
+  const { softDelete: deleteFolder, loading: folderDeleteLoading, error: folderDeleteError } = useFolderDeleter()
+  const { download, loading:downloadLoading, error:downloadError } = useFileDownloader()
+  const toggleDrawer = (open) => () => setDrawerOpen(open)
 
   const handleNewFolder = async () => {
+    console.log("creating folder", user._id + "fff" + folderName)
     if (!folderName.trim()) {
-      toast.error("Folder name is required");
-      return;
+      toast.error("Folder name is required")
+      return
     }
     try {
-      await create({ name: folderName, parentId: folderId });
-      setFolderName('');
-      setDrawerOpen(false);
-      reload();
+      await create({ name: folderName, parentId: folderId, ownerId: user._id })
+      setFolderName("")
+      setDrawerOpen(false)
+      reload()
     } catch (err) {
-      toast.error("Failed to create folder");
+      toast.error("Failed to create folder")
     }
-  };
+  }
+async function downloadFile(url, filename = 'file.docx') {
+  try {
+    const response = await fetch(url, {
+      mode: 'cors' // Cloudinary supports CORS on raw files
+    });
+    
+    if (!response.ok) throw new Error('Failed to download file');
 
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+  }
+}
+
+
+ const handleFileDownload = async (fileId) => {
+    console.log("downloading file", fileId)
+    const file=files.filter(item=> item._id===fileId)
+    try {
+      // await download(fileId)
+        downloadFile(file[0].url,file[0].name)
+      // reload()
+    } catch (err) {
+      toast.error("File upload failed")
+    }
+  }
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    console.log("uploading file", e.target.files[0])
+    const file = e.target.files[0]
+    if (!file) return
     try {
-      await upload({ file, folderId, folderPath });
-      reload();
+      await upload({ file, folderId, folderPath })
+      reload()
     } catch (err) {
-      toast.error("File upload failed");
+      toast.error("File upload failed")
     }
-  };
+  }
 
-  if (error) return <Alert message={error.message} type="error" />;
+  const handleOpenFolder = (folder) => {
+    setFolderStack([...folderStack, folder])
+  }
+
+  const handleDeleteFile = async (fileId) => {
+    console.log("Attempting to delete file:", fileId)
+    if (!window.confirm("Are you sure you want to delete this file?")) return
+
+    try {
+      await deleteFile(fileId)
+      toast.success("File deleted")
+      reload()
+      handleCloseFileMenu()
+    } catch (error) {
+      console.error("Delete file error:", error)
+      toast.error("Failed to delete file")
+    }
+  }
+
+  const handleDeleteFolder = async (folderId) => {
+    console.log("Attempting to delete folder:", folderId)
+    if (!window.confirm("Are you sure you want to delete this folder?")) return
+
+    try {
+      await deleteFolder(folderId)
+      toast.success("Folder deleted")
+      reload()
+      handleCloseFolderMenu()
+    } catch (error) {
+      console.error("Delete folder error:", error)
+      toast.error("Failed to delete folder")
+    }
+  }
+
+  const handleGoBack = () => {
+    if (folderStack.length === 0) return
+    setFolderStack(folderStack.slice(0, -1))
+  }
+
+  // Folder menu handlers
+  const handleFolderMenuClick = (event, folderId) => {
+    event.stopPropagation()
+    setFolderMenuAnchor(event.currentTarget)
+    setSelectedFolderId(folderId)
+  }
+
+  const handleCloseFolderMenu = () => {
+    setFolderMenuAnchor(null)
+    setSelectedFolderId(null)
+  }
+
+  // File menu handlers
+  const handleFileMenuClick = (event, fileId) => {
+    event.stopPropagation()
+    setFileMenuAnchor(event.currentTarget)
+    setSelectedFileId(fileId)
+  }
+
+  const handleCloseFileMenu = () => {
+    setFileMenuAnchor(null)
+    setSelectedFileId(null)
+  }
+
+  if (error) return <Alert message={error.message} type="error" />
 
   return (
     <>
@@ -73,70 +186,170 @@ const UploadDocument = () => {
             disabled={creating}
             className="mt-2 bg-[#497a71] text-white text-sm py-2 rounded-md hover:bg-[#99c7be] hover:text-black"
           >
-            {creating ? 'Creating…' : 'Create Folder'}
+            {creating ? "Creating…" : "Create Folder"}
           </button>
           {createErr && <Alert message={createErr.message} type="error" />}
         </div>
       </Drawer>
 
-      {openedFolder ? (
-        <OpenFolderScreen
-          folder={openedFolder}
-          onClose={() => setOpenedFolder(null)}
-        />
-      ) : (
-        <div className="min-h-screen bg-primary p-2 sm:p-4 mx-2 my-4 sm:m-6 rounded-lg shadow-md">
-          <div className="flex flex-col mb-5 bg-white rounded-lg px-4 py-4 sm:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mb-3 sm:mb-0">
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                  <label className="text-sm text-heading whitespace-nowrap">Show</label>
-                  <select className="text-sm px-2 py-1 text-heading bg-secondary rounded-md shadow-md">
-                    <option className="text-gray-700">10</option>
-                    <option className="text-gray-700">25</option>
-                    <option className="text-gray-700">50</option>
-                  </select>
-                  <span className="text-sm text-heading">entries</span>
-                </div>
-                <div className="w-full sm:w-auto">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="border-0 px-3 py-1.5 rounded-md shadow-md w-full sm:w-64 text-sm bg-secondary text-description"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
+      <div className="min-h-screen bg-primary p-2 sm:p-4 mx-2 my-4 sm:m-6 rounded-lg shadow-md">
+        <div className="flex flex-col mb-5 bg-white rounded-lg px-4 py-4 sm:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
+            <div className="flex flex-wrap items-center gap-3 mb-3 sm:mb-0">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm">Show</label>
+                <select className="text-sm px-2 py-1 bg-secondary rounded-md">
+                  <option>10</option>
+                  <option>25</option>
+                  <option>50</option>
+                </select>
+                <span className="text-sm">entries</span>
               </div>
-              <div className="mt-3 sm:mt-0 flex items-center gap-2">
-                <input type="file" onChange={handleFileChange} className="hidden" id="file-upload" />
-                <label htmlFor="file-upload" className="cursor-pointer bg-[#497a71] text-white text-sm px-4 py-2 rounded-md hover:bg-[#99c7be] hover:text-black">
-                  Upload File
-                </label>
-                <button
-                  onClick={toggleDrawer(true)}
-                  className="flex items-center gap-2 bg-[#497a71] text-white text-sm px-4 py-2 rounded-md hover:bg-[#99c7be] hover:text-black"
-                >
-                  <FiUpload /> New Folder
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {uploadErr && <Alert message={uploadErr.message} type="error" />}
-
-          <Spin spinning={loading}>
-            <div className="mb-4 overflow-x-auto">
-              <FolderGrid
-                folders={folders.filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase()))}
-                onOpenFolder={setOpenedFolder}
+              <input
+                type="text"
+                placeholder="Search..."
+                className="border-0 px-3 py-1.5 rounded-md shadow-md w-64 text-sm bg-secondary"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-          </Spin>
+            <div className="flex items-center gap-2">
+              <input type="file" onChange={handleFileChange} className="hidden" id="file-upload" />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer bg-[#497a71] text-white text-sm px-4 py-2 rounded-md hover:bg-[#99c7be] hover:text-black"
+              >
+                Upload Files
+              </label>
+              <button
+                onClick={toggleDrawer(true)}
+                className="flex items-center gap-2 bg-[#497a71] text-white text-sm px-4 py-2 rounded-md hover:bg-[#99c7be] hover:text-black"
+              >
+                <FiUpload /> New Folder
+              </button>
+              {folderStack.length > 0 && (
+                <button onClick={handleGoBack} className="bg-gray-300 text-sm px-4 py-2 rounded-md hover:bg-gray-400">
+                  Go Back
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </>
-  );
-};
 
-export default UploadDocument;
+        {uploadErr && <Alert message={uploadErr.message} type="error" />}
+
+        <Spin spinning={loading || uploading || creating || fileDeleteLoading || folderDeleteLoading || downloadLoading}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* Folders */}
+            {folders.map((folder) => (
+              <div
+                key={folder._id}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleOpenFolder(folder)
+                }}
+                className="flex justify-between items-center bg-white rounded p-4 shadow cursor-pointer"
+              >
+                📁 {folder.name}
+                <IconButton size="small" onClick={(e) => handleFolderMenuClick(e, folder._id)} className="p-1">
+                  <IoEllipsisVertical />
+                </IconButton>
+              </div>
+            ))}
+
+            {/* Files */}
+            {files.map((file) => (
+              <div key={file._id} className="flex justify-between items-center bg-white rounded p-4 shadow">
+                📄 {file.name}
+                <IconButton size="small" onClick={(e) => handleFileMenuClick(e, file._id)} className="p-1">
+                  <IoEllipsisVertical />
+                </IconButton>
+              </div>
+            ))}
+          </div>
+        </Spin>
+
+        {/* Folder Menu */}
+        <Menu
+          anchorEl={folderMenuAnchor}
+          open={Boolean(folderMenuAnchor)}
+          onClose={handleCloseFolderMenu}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+        
+          <MenuItem
+            onClick={() => {
+              console.log("Update folder:", selectedFolderId)
+              handleCloseFolderMenu()
+              // TODO: Trigger update modal or logic here
+            }}
+          >
+            Update
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              console.log("Delete folder clicked:", selectedFolderId)
+              handleDeleteFolder(selectedFolderId)
+            }}
+            sx={{ color: "red" }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+
+        {/* File Menu */}
+        <Menu
+          anchorEl={fileMenuAnchor}
+          open={Boolean(fileMenuAnchor)}
+          onClose={handleCloseFileMenu}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+           <MenuItem
+            onClick={() => {
+              console.log("Update file:", selectedFileId)
+              handleCloseFileMenu()
+              handleFileDownload(selectedFileId)
+              // TODO: Trigger update modal or logic here
+            }}
+          >
+            Download
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              console.log("Update file:", selectedFileId)
+              handleCloseFileMenu()
+              // TODO: Trigger update modal or logic here
+            }}
+          >
+            Update
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              console.log("Delete file clicked:", selectedFileId)
+              handleDeleteFile(selectedFileId)
+            }}
+            sx={{ color: "red" }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+      </div>
+    </>
+  )
+}
+
+export default UploadDocument

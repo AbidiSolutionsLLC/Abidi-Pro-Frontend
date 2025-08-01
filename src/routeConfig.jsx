@@ -48,8 +48,8 @@ export const moduleConfigs = {
     links: [
       { name: "Project DashBoard", path: "/project/projectDashboard" },
       { name: "Projects", path: "/project/projects" },
-      { name: "Assign Task", path: "/project/projectDetailed" },
-      { name: "My Task", path: "/project/myTask" },
+      // { name: "Assign Task", path: "/project/projectDetailed" },
+      // { name: "My Task", path: "/project/myTask" },
     ],
   },
    admin: {

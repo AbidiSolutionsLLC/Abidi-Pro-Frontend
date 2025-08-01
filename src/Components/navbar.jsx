@@ -16,7 +16,7 @@ import api from "../axios";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { TbUserQuestion } from "react-icons/tb";
-import { logoutUser } from "../Store/authSlice";
+import { logoutUser } from "../slices/authSlice";
 
 import { IconButton } from "@material-tailwind/react";
 const Navbar = () => {

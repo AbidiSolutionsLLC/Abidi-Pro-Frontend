@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { checkInNow, checkOutNow } from "../../api/attendanceTimer";
+import { checkInNow, checkOutNow } from "../../slices/attendanceTimer";
 
 const TimeLogContext = createContext();
 export const useTimeLog = () => useContext(TimeLogContext);

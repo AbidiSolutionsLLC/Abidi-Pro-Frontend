@@ -3,9 +3,9 @@ import api from "../axios";
 
 export const checkInNow = createAsyncThunk(
   'employee/checkin',
-  async (_, { rejectWithValue }) => {  // Removed data parameter since we don't need to send userId
+  async (_, { rejectWithValue }) => {  
     try {
-      const response = await api.post('/timetrackers/check-in', {}, {  // Empty body since we're using req.user.id
+      const response = await api.post('/timetrackers/check-in', {}, {  
         withCredentials: true
       });
       console.log(response.data,"success from api slice")
@@ -24,13 +24,14 @@ export const checkOutNow = createAsyncThunk(
       const response = await api.post('/timetrackers/check-out', {}, {  // Empty body
         withCredentials: true
       });
+      console.log(response.data,"success from api slice")
       return response.data;
     } catch (err) {
+         console.log(err.response.data,"error from api")
       return rejectWithValue(err.response?.data || "checkOut failed");
     }
   }
 );
-
 const attendanceTimerSlice=createSlice({
     name:'employee',
     initialState:{

@@ -11,21 +11,12 @@ export const silentRefresh = createAsyncThunk(
         withCredentials: true,
         _silentRefresh: true
       });
-
-      if (!response.data.accessToken || !response.data.user) {
-        return rejectWithValue("No valid session");
-      }
-
-      return {
-        user: response.data.user,
-        token: response.data.accessToken,
-      };
+      return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Session expired");
     }
   }
 );
-
 
 export const loginUser = createAsyncThunk(
   'auth/login',
