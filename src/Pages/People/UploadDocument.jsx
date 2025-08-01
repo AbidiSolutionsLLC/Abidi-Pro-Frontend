@@ -192,7 +192,7 @@ async function downloadFile(url, filename = 'file.docx') {
         </div>
       </Drawer>
 
-      <div className="min-h-screen bg-primary p-2 sm:p-4 mx-2 my-4 sm:m-6 rounded-lg shadow-md">
+      <div>
         <div className="flex flex-col mb-5 bg-white rounded-lg px-4 py-4 sm:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
             <div className="flex flex-wrap items-center gap-3 mb-3 sm:mb-0">

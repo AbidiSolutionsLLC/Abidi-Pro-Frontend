@@ -3,6 +3,7 @@ import { IoCalendarNumberOutline } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ApproveTimelogs from "./ApproveTimelogs";
 
 const TimeTracker = () => {
   const timeSheets = [
@@ -106,7 +107,12 @@ const TimeTracker = () => {
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
   const [showCalendar, setShowCalendar] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
+  const tabs = [
+    { title: "Time Tracker", component: <TimeTracker /> },
+    { title: "Approve Timelogs", component: <ApproveTimelogs /> }
+  ];
   const handleNavigation = (direction) => {
     setActiveSheet(direction === "previous" ? "previous" : "current");
   };
@@ -131,8 +137,32 @@ const TimeTracker = () => {
 
   return (
     <div className="min-h-screen bg-primary p-4 m-6 rounded-lg shadow-md">
+
+      {/* Tab Bar */}
+      <div className="inline-flex flex-row flex-wrap items-center justify-center bg-white p-1 rounded-lg shadow-sm border border-gray-200 mb-4">
+        {tabs.map((item, index) => (
+          <div key={item.title} className="flex items-center">
+            <button
+              className={`px-4 py-2 text-sm font-medium transition-colors duration-200
+                ${activeTab === index
+                  ? "text-primary bg-primary/10 rounded-md"
+                  : "text-heading hover:text-primary hover:bg-gray-100 rounded-md"
+                }`}
+              onClick={() => setActiveTab(index)}
+            >
+              {item.title}
+            </button>
+            {index !== tabs.length - 1 && (
+              <span className="w-px h-4 bg-gray-300 mx-1"></span>
+            )}
+          </div>
+        ))}
+      </div>
       {/* Header */}
-      <div className="flex flex-col w-full sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 bg-white p-4 rounded-md ">
+      {
+        activeTab == 0 ?
+        <>
+        <div className="flex flex-col w-full sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 bg-white p-4 rounded-md ">
         <div className="mx-4">
           <h2 className=" text-base  sm:text-lg font-semibold text-black">
             Time Tracker
@@ -142,11 +172,10 @@ const TimeTracker = () => {
         <div className="flex flex-wrap items-center gap-3 mx-4">
           {/* Previous Button */}
           <button
-            className={`px-2 py-1 rounded ${
-              activeSheet === "previous"
+            className={`px-2 py-1 rounded ${activeSheet === "previous"
                 ? "bg-background text-heading"
                 : "bg-gray-200"
-            }`}
+              }`}
             onClick={() => handleNavigation("previous")}
           >
             {"<"}
@@ -179,11 +208,10 @@ const TimeTracker = () => {
 
           {/* Next Button */}
           <button
-            className={`px-2 py-1 rounded ${
-              activeSheet === "current"
+            className={`px-2 py-1 rounded ${activeSheet === "current"
                 ? "bg-background text-heading"
                 : "bg-gray-200"
-            }`}
+              }`}
             onClick={() => handleNavigation("current")}
           >
             {">"}
@@ -234,11 +262,10 @@ const TimeTracker = () => {
                       <td className="p-3">{item.totalHours}</td>
                       <td className="p-3">
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            item.status === "Approved"
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${item.status === "Approved"
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
-                          }`}
+                            }`}
                         >
                           {item.status}
                         </span>
@@ -257,6 +284,12 @@ const TimeTracker = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+      </>:null
+      }
+      {
+        activeTab==1?tabs[1].component:null
+      }
+      
     </div>
   );
 };

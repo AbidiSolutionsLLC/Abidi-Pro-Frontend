@@ -98,8 +98,7 @@ function App() {
           <Route index path="summary" element={<LeaveTracker />} />
           <Route index path="shared" element={<Files />} />
           <Route path="files" element={<Files />} />
-                    <Route index path="raise" element={<Ticket />} />
-
+          <Route index path="raise" element={<Ticket />} />
           <Route index path="history" element={<TimeTracker />} />
           <Route path="profile" element={<Profile />} />
           <Route path="edit-profile" element={<EditProfile />} />
@@ -134,7 +133,6 @@ function App() {
         </Route>
         <Route path="/project/*" element={<AppLayout />}>
           <Route index element={<Navigate to="projectDashboard" replace />} />
-
           <Route index path="projectDashboard" element={<ProjectDashBoard />} />
           <Route path="projects" element={<Projects />} />
             {/* <Route path="projectDetailed" element={<Project />} />
