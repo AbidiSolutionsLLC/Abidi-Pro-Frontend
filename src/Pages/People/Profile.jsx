@@ -113,7 +113,7 @@ export default function Profile() {
       </div>
  
       {/* Profile Picture */}
-      <div className="relative -mt-14 pl-6 z-10">
+      <div className="relative -mt-14 pl-6 z-5">
         <img
           src={`https://randomuser.me/api/portraits/lego/${
             user?._id ? user._id.length % 10 : 1
