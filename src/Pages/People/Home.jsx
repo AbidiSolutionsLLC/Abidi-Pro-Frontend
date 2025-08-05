@@ -26,6 +26,7 @@ function format(sec) {
 
 const Home = () => {
   const userInfo = useSelector((state) => state.auth.user);
+  const profileImage = userInfo?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e";
   const firstName = userInfo?.name || "User";
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +45,7 @@ const Home = () => {
     const fetchDashboardCards = async () => {
       try {
         if (!userInfo?._id) return;
-        
+
         setLoading(true);
         const response = await api.get(`/users/${userInfo._id}/dashboard-cards`);
         setCards(response.data);
@@ -88,59 +89,59 @@ const Home = () => {
   };
 
   const renderCard = (card) => {
-  const { id, type } = card;
-  const onDelete = () => removeCard(id);
+    const { id, type } = card;
+    const onDelete = () => removeCard(id);
 
-  switch (type) {
-    case "feeds":
-      return <FeedsCard key={id} onDelete={onDelete} />;
+    switch (type) {
+      case "feeds":
+        return <FeedsCard key={id} onDelete={onDelete} />;
 
-    case "attendance": {
-      const sampleData = [
-        { day: "Mon", hours: 6 },
-        { day: "Tue", hours: 8 },
-        { day: "Wed", hours: 4 },
-        { day: "Thu", hours: 2 },
-        { day: "Fri", hours: 7 },
-        { day: "Sat", hours: 0 },
-        { day: "Sun", hours: 5 },
-      ];
-      return (
-        <AttendanceCard key={id} weeklyData={sampleData} onDelete={onDelete} />
-      );
+      case "attendance": {
+        const sampleData = [
+          { day: "Mon", hours: 6 },
+          { day: "Tue", hours: 8 },
+          { day: "Wed", hours: 4 },
+          { day: "Thu", hours: 2 },
+          { day: "Fri", hours: 7 },
+          { day: "Sat", hours: 0 },
+          { day: "Sun", hours: 5 },
+        ];
+        return (
+          <AttendanceCard key={id} weeklyData={sampleData} onDelete={onDelete} />
+        );
+      }
+
+      case "holidays":
+        return <HolidaysCard key={id} onDelete={onDelete} />;
+
+      case "todo":
+        return <ToDoCard key={id} onDelete={onDelete} />;
+
+      case "notes":
+        return <NotesCard key={id} onDelete={onDelete} />;
+
+      case "recent activities":
+        return <RecentActivitiesCard key={id} onDelete={onDelete} />;
+
+      case "birthdays":
+        return <UpcomingBirthdaysCard key={id} onDelete={onDelete} />;
+
+      case "leavelog":
+        return <LeaveLogCard key={id} onDelete={onDelete} />;
+
+      case "upcomingDeadlines":
+        return <UpcomingDeadlinesCard key={id} onDelete={onDelete} />;
+
+      case "timeoffBalance":
+        return <TimeoffBalanceCard key={id} onDelete={onDelete} />;
+
+      case "tasksAssignedToMe":
+        return <TasksAssignedToMeCard key={id} onDelete={onDelete} />;
+
+      default:
+        return null;
     }
-
-    case "holidays":
-      return <HolidaysCard key={id} onDelete={onDelete} />;
-
-    case "todo":
-      return <ToDoCard key={id} onDelete={onDelete} />;
-
-    case "notes":
-      return <NotesCard key={id} onDelete={onDelete} />;
-
-    case "recent activities":
-      return <RecentActivitiesCard key={id} onDelete={onDelete} />;
-
-    case "birthdays":
-      return <UpcomingBirthdaysCard key={id} onDelete={onDelete} />;
-
-    case "leavelog":
-      return <LeaveLogCard key={id} onDelete={onDelete} />;
-
-    case "upcomingDeadlines":
-      return <UpcomingDeadlinesCard key={id} onDelete={onDelete} />;
-
-    case "timeoffBalance":
-      return <TimeoffBalanceCard key={id} onDelete={onDelete} />;
-
-    case "tasksAssignedToMe":
-      return <TasksAssignedToMeCard key={id} onDelete={onDelete} />;
-
-    default:
-      return null;
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -175,9 +176,18 @@ const Home = () => {
       <CardBody className="bg-background rounded-lg border-0 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 md:p-6">
         {/* Greeting */}
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          <div className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm sm:text-base md:text-xl font-bold">
-            {firstName.charAt(0).toUpperCase()}
-          </div>
+          {profileImage ? (
+            <img
+              src={profileImage}
+              alt={firstName}
+              className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm sm:text-base md:text-xl font-bold">
+              {firstName.charAt(0).toUpperCase()}
+            </div>
+          )}
+
           <div className="truncate">
             <h2 className="text-lg sm:text-xl text-heading font-semibold truncate">
               Hey, {firstName}!

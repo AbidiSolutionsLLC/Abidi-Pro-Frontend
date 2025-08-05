@@ -151,7 +151,7 @@ function App() {
 
         <Route path="/admin/*" element={<AppLayout />}>
           <Route index element={<Navigate to="adminDashboard" replace />} /> //
-          ✅ Redirect
+          Redirect
           <Route index path="adminDashboard" element={<AdminDashBoard />} />
              <Route path="leaveTrackerAdmin" element={<LeaveTrackerAdmin />} />
                 <Route path="upload" element={<UploadDocument />} />
