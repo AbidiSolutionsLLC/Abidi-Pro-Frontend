@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import DatePicker from "react-datepicker";
@@ -13,8 +13,9 @@ import {
   FaInfoCircle,
   FaRegCalendarAlt
 } from "react-icons/fa";
+import api from "../../axios";
+import { toast } from "react-toastify";
 
-// Status badges with colors and icons
 const StatusBadge = ({ status }) => {
   const statusConfig = {
     Present: { icon: <FaCheckCircle className="mr-1" />, color: "bg-green-100 text-green-800" },
@@ -32,57 +33,10 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// Generate more realistic dummy data
-const generateWeeklyData = (startOfWeek) => {
-  const statuses = ["Present", "Absent", "Half Day", "Leave", "Holiday"];
-  const days = [];
-  const today = new Date();
-
-  for (let i = 0; i < 7; i++) {
-    const day = new Date(startOfWeek);
-    day.setDate(startOfWeek.getDate() + i);
-
-    if (day > today) {
-      // Future day — no status yet
-      days.push({
-        date: day.getDate(),
-        dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-        fullDate: day.toDateString(),
-        status: "Upcoming",
-        checkIn: null,
-        checkOut: null,
-        totalHours: 0,
-        notes: null,
-      });
-    } else if (day.toDateString() === today.toDateString()) {
-      // Today — show ongoing work
-      days.push({
-        date: day.getDate(),
-        dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-        fullDate: day.toDateString(),
-        status: "Working...",
-        checkIn: "9:00",
-        checkOut: null,
-        totalHours: null,
-        notes: "Work in progress",
-      });
-    } else {
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const isWorkingDay = status === "Present" || status === "Half Day";
-      days.push({
-        date: day.getDate(),
-        dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-        fullDate: day.toDateString(),
-        status,
-        checkIn: isWorkingDay ? "9:00" : null,
-        checkOut: isWorkingDay ? "17:00" : null,
-        totalHours: isWorkingDay ? (status === "Half Day" ? 4 : 8) : 0,
-        notes: status === "Leave" ? "Sick leave" : status === "Holiday" ? "Public holiday" : null,
-      });
-    }
-  }
-
-  return days;
+const formatTime = (dateString) => {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 const formatDate = (date) => {
@@ -97,8 +51,8 @@ const Attendance = () => {
   const today = new Date();
   const [weekStart, setWeekStart] = useState(() => {
     const start = new Date(today);
-    const dayOfWeek = start.getDay(); // 0=Sun,...6=Sat
-    const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // adjust to Monday
+    const dayOfWeek = start.getDay();
+    const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     start.setDate(diff);
     return start;
   });
@@ -107,6 +61,86 @@ const Attendance = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
   const [expandedView, setExpandedView] = useState(false);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAttendanceData = async (startDate) => {
+    try {
+      setLoading(true);
+      const month = startDate.getMonth() + 1;
+      const year = startDate.getFullYear();
+      
+      const response = await api.get(`/timetrackers/attendance/${month}/${year}`);
+      setAttendanceData(response.data);
+    } catch (error) {
+      toast.error("Failed to load attendance data");
+      console.error("Error fetching attendance:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendanceData(weekStart);
+  }, [weekStart]);
+
+  const generateWeeklyData = (startOfWeek) => {
+    const days = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      day.setHours(0, 0, 0, 0);
+
+      const dayData = attendanceData.find(d => {
+        const recordDate = new Date(d.date);
+        recordDate.setHours(0, 0, 0, 0);
+        return recordDate.getTime() === day.getTime();
+      });
+
+      if (day > today) {
+        // Future day
+        days.push({
+          date: day.getDate(),
+          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+          fullDate: day.toDateString(),
+          status: "Upcoming",
+          checkIn: null,
+          checkOut: null,
+          totalHours: 0,
+          notes: null,
+        });
+      } else if (dayData) {
+        // Day with attendance record
+        days.push({
+          date: day.getDate(),
+          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+          fullDate: day.toDateString(),
+          status: dayData.status,
+          checkIn: formatTime(dayData.checkInTime),
+          checkOut: formatTime(dayData.checkOutTime),
+          totalHours: dayData.totalHours || 0,
+          notes: dayData.notes,
+        });
+      } else {
+        // Past day with no record
+        days.push({
+          date: day.getDate(),
+          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+          fullDate: day.toDateString(),
+          status: "Absent",
+          checkIn: null,
+          checkOut: null,
+          totalHours: 0,
+          notes: "No attendance record",
+        });
+      }
+    }
+
+    return days;
+  };
 
   const weeklyData = generateWeeklyData(weekStart);
 
@@ -244,7 +278,7 @@ const Attendance = () => {
                 className="relative flex items-start group transition-all duration-150"
               >
                 {/* Timeline dot with pulse animation for today */}
-                <div className={`absolute left-12 top-5 h-3 w-5 rounded-full transform translate-x-1/2 z-10 ${
+                <div className={`absolute left-12 top-5 h-3 w-5 rounded-full transform translate-x-1/2 z-99 ${
                   day.status === "Present" ? "bg-green-500" :
                   day.status === "Absent" ? "bg-red-500" :
                   day.status === "Half Day" ? "bg-yellow-500" :
