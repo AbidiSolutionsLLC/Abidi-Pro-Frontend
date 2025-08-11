@@ -1,8 +1,14 @@
 import React from "react";
-import { FaSortDown, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import SearchBar from "./SearchBar";
 
-const ProjectsTable = ({ projects, loading, onUpdate, onDelete, openModal }) => {
+const ProjectsTable = ({
+  projects,
+  loading,
+  onUpdate,
+  onDelete,
+  openModal,
+}) => {
   const handleEdit = (project) => {
     // You can implement edit functionality here
     // For example, open a modal with the project data
@@ -13,6 +19,13 @@ const ProjectsTable = ({ projects, loading, onUpdate, onDelete, openModal }) => 
     if (window.confirm("Are you sure you want to delete this project?")) {
       onDelete(projectId);
     }
+  };
+
+  // Function to decide color based on completion
+  const getProgressColor = (percentage) => {
+    if (percentage < 40) return "#f44336"; // red
+    if (percentage < 70) return "#ff9800"; // orange
+    return "#4caf50"; // green
   };
 
   return (
@@ -31,7 +44,16 @@ const ProjectsTable = ({ projects, loading, onUpdate, onDelete, openModal }) => 
         <table className="min-w-full text-sm text-left border-separate border-spacing-0">
           <thead className="bg-gray-100">
             <tr>
-              {["ID", "Project Name", "Project Owner", "No.Of User", "Status", "Start Date", "End Date", "Actions"].map((header, index) => (
+              {[
+                "ID",
+                "Project Name",
+                "Project Owner",
+                "No.Of User",
+                "Status",
+                "Start Date",
+                "End Date",
+                "Progress",
+              ].map((header, index) => (
                 <th
                   key={index}
                   className={`p-3 font-medium text-gray-700 border-r whitespace-nowrap last:border-none border-gray-300`}
@@ -54,35 +76,68 @@ const ProjectsTable = ({ projects, loading, onUpdate, onDelete, openModal }) => 
               ))
             ) : projects.length > 0 ? (
               projects.map((project) => (
-                <tr key={project._id} className="border-b hover:bg-gray-50">
-                  <td className="p-3 whitespace-nowrap">{project._id}</td>
-                  <td className="p-3 whitespace-nowrap">{project.name}</td>
-                  <td className="p-3 whitespace-nowrap">{project.projectOwner?.name || 'N/A'}</td>
-                  <td className="p-3 whitespace-nowrap">{project.users?.length || 0}</td>
+                <tr key={project.id} className="hover:bg-gray-200">
+                  <td className="p-3 whitespace-nowrap">{project.id}</td>
+                  <td className="p-3 whitespace-nowrap relative group">
+                    <span>{project.name}</span>
+
+                    {/* Hover button */}
+                    <button
+                      onClick={() => console.log("View project:", project)}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 bg-blue-200 text-blue-700 px-3 py-1 rounded hover:bg-blue-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    >
+                      View Project
+                    </button>
+                  </td>
+
                   <td className="p-3 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      project.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                      project.status === 'Completed' ? 'bg-blue-100 text-blue-800' : 
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {project.status}
+                    {project.ProjectOwner || "N/A"}
+                  </td>
+                  <td className="p-3 whitespace-nowrap">{project.NoOfUser}</td>
+                  <td className="p-3 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        project.Status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : project.Status === "Completed"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {project.Status}
                     </span>
                   </td>
-                  <td className="p-3 whitespace-nowrap">{new Date(project.startDate).toLocaleDateString()}</td>
-                  <td className="p-3 whitespace-nowrap">{new Date(project.endDate).toLocaleDateString()}</td>
-                  <td className="p-3 whitespace-nowrap flex gap-2">
-                    <button 
-                      onClick={() => handleEdit(project)}
-                      className="text-blue-500 hover:text-blue-700"
+                  <td className="p-3 whitespace-nowrap">
+                    {new Date(project.StartDate).toLocaleDateString()}
+                  </td>
+                  <td className="p-3 whitespace-nowrap">
+                    {new Date(project.EndDate).toLocaleDateString()}
+                  </td>
+                  <td className="p-3 whitespace-nowrap">
+                    <div
+                      style={{
+                        background: "#e0e0e0",
+                        borderRadius: "10px",
+                        height: "20px",
+                        width: "100%",
+                        overflow: "hidden",
+                      }}
                     >
-                      <FaEdit />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(project._id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <FaTrash />
-                    </button>
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${project.completion}%`,
+                          background: getProgressColor(project.completion),
+                          textAlign: "center",
+                          color: "white",
+                          fontSize: "12px",
+                          lineHeight: "20px",
+                          transition: "width 0.3s ease-in-out",
+                        }}
+                      >
+                        {project.completion}%
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ))
