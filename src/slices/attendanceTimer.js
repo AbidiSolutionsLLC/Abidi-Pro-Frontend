@@ -19,9 +19,9 @@ export const checkInNow = createAsyncThunk(
 
 export const checkOutNow = createAsyncThunk(
   'employee/checkout',
-  async (_, { rejectWithValue }) => {  // Removed userId parameter
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.post('/timetrackers/check-out', {}, {  // Empty body
+      const response = await api.post('/timetrackers/check-out', {}, {
         withCredentials: true
       });
       console.log(response.data,"success from api slice")
@@ -32,44 +32,53 @@ export const checkOutNow = createAsyncThunk(
     }
   }
 );
-const attendanceTimerSlice=createSlice({
-    name:'employee',
-    initialState:{
-        checkInn:null,
-        checkOut:null,
-        loading:false,
-        error:null,
+
+const attendanceTimerSlice = createSlice({
+    name: 'employee',
+    initialState: {
+        checkInn: null,
+        checkOut: null,
+        loading: false,
+        error: null,
     },
-    reducers:{
-      setError(state,action){
-        state.error=action.payload
+    reducers: {
+      setError(state, action) {
+        state.error = action.payload;
+      },
+      resetCheckIn(state) {
+        state.checkInn = null;
       }
     },
-    extraReducers:(builder)=>{
-        builder.addCase(checkInNow.pending,(state)=>{
-            state.loading=true
-            
-        }).addCase(checkInNow.fulfilled,(state,action)=>{
-            state.loading=false
-            state.error=null
-            state.checkInn=action.payload
-            
-        }).addCase(checkInNow.rejected,(state,action)=>{
-            state.error=action.payload
-            state.loading=false
-        }).addCase(checkOutNow.pending,(state)=>{
-            state.loading=true
-            
-        }).addCase(checkOutNow.fulfilled,(state,action)=>{
-            state.loading=false
-            state.error=null
-            state.checkOut=action.payload
-            state.checkInn=null
-        }).addCase(checkOutNow.rejected,(state,action)=>{
-            state.error=action.payload
-            state.loading=false 
-        })
+    extraReducers: (builder) => {
+        builder
+          .addCase(checkInNow.pending, (state) => {
+            state.loading = true;
+          })
+          .addCase(checkInNow.fulfilled, (state, action) => {
+            state.loading = false;
+            state.error = null;
+            state.checkInn = action.payload;
+            state.checkOut = null; // Reset checkout on new checkin
+          })
+          .addCase(checkInNow.rejected, (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+          })
+          .addCase(checkOutNow.pending, (state) => {
+            state.loading = true;
+          })
+          .addCase(checkOutNow.fulfilled, (state, action) => {
+            state.loading = false;
+            state.error = null;
+            state.checkOut = action.payload;
+            state.checkInn = null; // This should reset the checkin
+          })
+          .addCase(checkOutNow.rejected, (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+          });
     }
-})
-export const { setError } = attendanceTimerSlice.actions;
-export default attendanceTimerSlice.reducer
+});
+
+export const { setError, resetCheckIn } = attendanceTimerSlice.actions;
+export default attendanceTimerSlice.reducer;

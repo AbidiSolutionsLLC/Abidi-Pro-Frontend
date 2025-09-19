@@ -25,7 +25,7 @@ import Projects from "./Pages/Projects/Projects";
 import Project from "./Pages/Projects/Project";
 import UserManagement from "./Pages/Admin/UserManagement";
 import LeaveRequest from "./Pages/People/LeaveRequest";
-import ApproveTimelogs from "./Pages/People/ApproveTimelogs";
+import ApproveTimesheets from "./Pages/People/ApproveTimesheets";
 import { ToastContainer } from "react-toastify";
 import PrivateRoute from "./Components/PrivateRoute";
 import PublicRoute from "./Components/PublicRoute";
@@ -125,7 +125,7 @@ function App() {
         {/* <Route path="/time/*" element={<AppLayout />}>
           <Route index element={<Navigate to="history" replace />} />
           <Route index path="history" element={<TimeTracker />} />{" "}
-          <Route path="approve" element={<ApproveTimelogs />} />
+          <Route path="approve" element={<ApproveTimesheets />} />
         </Route> */}
 
         {/* <Route path="/tickets/*" element={<AppLayout />}>
@@ -158,7 +158,7 @@ function App() {
                 <Route path="upload" element={<UploadDocument />} />
           <Route path="userManagement" element={<UserManagement />} />
           {/* <Route path="logs" element={<ActivityLogs />} /> */}
-          <Route path="approve" element={<ApproveTimelogs />} />
+          <Route path="approve" element={<ApproveTimesheets />} />
           <Route path="assign-ticket" element={<AdminTickets />} />
           <Route path="assign-ticket/:ticketId" element={<AssignTicket />} />
         </Route>

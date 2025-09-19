@@ -24,8 +24,22 @@ const getTimesheetById = async (id) => {
   return response.data;
 };
 
+const getAllTimesheets = async (month, year) => {
+  const response = await api.get(`${API_URL}/all`, {
+    params: { month, year }
+  });
+  return response.data;
+};
+
+const updateTimesheetStatus = async (id, updateData) => {
+  const response = await api.put(`${API_URL}/${id}/status`, updateData);
+  return response.data;
+};
+
 export default {
   getEmployeeTimesheets,
   createTimesheet,
   getTimesheetById,
+  getAllTimesheets,
+  updateTimesheetStatus
 };
