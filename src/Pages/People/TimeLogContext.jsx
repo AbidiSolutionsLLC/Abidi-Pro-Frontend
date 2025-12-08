@@ -18,15 +18,22 @@ export function TimeLogProvider({ children }) {
 
   const { checkInn, checkOut: checkout, loading, error } = data?.attendanceTimer;
 
-  // Use localStart instead of deriving from Redux state for timer control
   const start = localStart;
 
   useEffect(() => {
-    // Initialize timer from Redux state on mount
-    if (checkInn?.log?.checkInTime) {
-      setLocalStart(new Date(checkInn.log.checkInTime).getTime());
-    }
-  }, []);
+    const fetchTodayLog = async () => {
+      if (!userId) return;
+      try {
+        const response = await api.get(`/timetrackers/daily-log/${userId}`);
+        if (response.data && response.data.checkInTime && !response.data.checkOutTime) {
+          setLocalStart(new Date(response.data.checkInTime).getTime());
+        }
+      } catch (error) {
+        console.log("No active check-in session found");
+      }
+    };
+    fetchTodayLog();
+  }, [userId]);
 
   useEffect(() => {
     if (!start) {
@@ -57,6 +64,9 @@ export function TimeLogProvider({ children }) {
   useEffect(() => {
     if (checkInn?.log?.checkInTime) {
       setLocalStart(new Date(checkInn.log.checkInTime).getTime());
+      if (checkInn.message) {
+        toast.success(checkInn.message);
+      }
     }
   }, [checkInn]);
 
@@ -65,6 +75,9 @@ export function TimeLogProvider({ children }) {
       setLocalStart(null);
       setElapsed(0);
       clearInterval(intervalRef.current);
+      if (checkout.message) {
+        toast.success(checkout.message);
+      }
     }
   }, [checkout]);
 

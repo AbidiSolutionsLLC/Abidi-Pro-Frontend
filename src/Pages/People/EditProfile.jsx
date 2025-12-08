@@ -50,13 +50,38 @@ export default function EditProfile() {
           startYear: parseInt((e.date || "").split("–")[0]) || 0,
           endYear: parseInt((e.date || "").split("–")[1]) || 0,
         })),
-        experience: experienceList.map((e) => ({
-          company: e.company || "",
-          jobType: e.type || "Full-time",
-          description: e.job || e.description || "",
-          startDate: new Date(),
-          endDate: null,
-        })),
+        experience: experienceList.map((e) => {
+          // Parse dates from date string or use existing dates
+          let startDate = e.startDate ? new Date(e.startDate) : new Date();
+          let endDate = e.endDate ? new Date(e.endDate) : null;
+          
+          // Try to parse from date string if available
+          if (e.date) {
+            const dateParts = e.date.split("–").map(d => d.trim());
+            if (dateParts.length >= 1 && dateParts[0]) {
+              try {
+                startDate = new Date(dateParts[0]);
+              } catch (err) {
+                console.warn("Could not parse start date:", dateParts[0]);
+              }
+            }
+            if (dateParts.length >= 2 && dateParts[1]) {
+              try {
+                endDate = new Date(dateParts[1]);
+              } catch (err) {
+                console.warn("Could not parse end date:", dateParts[1]);
+              }
+            }
+          }
+          
+          return {
+            company: e.company || "",
+            jobType: e.type || "Full-time",
+            description: e.job || e.description || "",
+            startDate: startDate,
+            endDate: endDate,
+          };
+        }),
       };
 
       await api.put(`/users/${userId}`, payload, {

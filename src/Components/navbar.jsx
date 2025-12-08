@@ -38,7 +38,6 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const [openNav, setOpenNav] = useState(false);
 
-  // Get user data from Redux
   const { user } = useSelector((state) => state.auth);
   const profileImage = user?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e";
 
@@ -69,15 +68,12 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Close profile dropdown if clicked outside
       if (
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(event.target)
       ) {
         setProfileDropdownOpen(false);
       }
-
-      // Close theme dropdown if clicked outside
       if (
         themeDropdownRef.current &&
         !themeDropdownRef.current.contains(event.target)

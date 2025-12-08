@@ -186,7 +186,6 @@ const handleSaveAccessSettings = async () => {
     setFolderStack(folderStack.slice(0, -1))
   }
 
-  // Folder menu handlers
   const handleFolderMenuClick = (event, folderId) => {
     event.stopPropagation()
     setFolderMenuAnchor(event.currentTarget)
@@ -198,7 +197,6 @@ const handleSaveAccessSettings = async () => {
     setSelectedFolderId(null)
   }
 
-  // File menu handlers
   const handleFileMenuClick = (event, fileId) => {
     event.stopPropagation()
     setFileMenuAnchor(event.currentTarget)

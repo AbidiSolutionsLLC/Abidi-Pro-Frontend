@@ -110,7 +110,6 @@ const projectSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Add similar cases for other async thunks
       .addCase(fetchProjectById.fulfilled, (state, action) => {
         state.currentProject = action.payload;
       })

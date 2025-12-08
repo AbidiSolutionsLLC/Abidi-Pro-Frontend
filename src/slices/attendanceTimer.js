@@ -59,6 +59,10 @@ const attendanceTimerSlice = createSlice({
             state.error = null;
             state.checkInn = action.payload;
             state.checkOut = null; // Reset checkout on new checkin
+            // Show success message if auto-closed previous session
+            if (action.payload.autoClosed) {
+              console.log("Previous session was auto-closed");
+            }
           })
           .addCase(checkInNow.rejected, (state, action) => {
             state.error = action.payload;

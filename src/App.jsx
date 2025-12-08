@@ -47,8 +47,8 @@ import AssignTicket from "./Pages/Tickets/AssignTickets";
 import ProjectDetail from "./Pages/Projects/ProjectDetail";
 
 function App() {
-  useAutoLogin();
-  useTokenRefresh();
+  // useAutoLogin();
+  // useTokenRefresh();
   return (
     <>
       <ToastContainer
