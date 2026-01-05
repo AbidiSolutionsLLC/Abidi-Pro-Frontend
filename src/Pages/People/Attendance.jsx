@@ -109,20 +109,8 @@ const Attendance = () => {
         return recordDate.getTime() === day.getTime();
       });
 
-      if (day > today) {
-        // Future day
-        days.push({
-          date: day.getDate(),
-          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-          fullDate: day.toDateString(),
-          status: "Upcoming",
-          checkIn: null,
-          checkOut: null,
-          totalHours: 0,
-          notes: null,
-        });
-      } else if (dayData) {
-        // Day with attendance record
+      if (dayData) {
+        // Day with attendance record (can be past, present, or future)
         days.push({
           date: day.getDate(),
           dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
@@ -132,6 +120,18 @@ const Attendance = () => {
           checkOut: formatTime(dayData.checkOutTime),
           totalHours: dayData.totalHours || 0,
           notes: dayData.notes,
+        });
+      } else if (day > today) {
+        // Future day with no attendance record
+        days.push({
+          date: day.getDate(),
+          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+          fullDate: day.toDateString(),
+          status: "Upcoming",
+          checkIn: null,
+          checkOut: null,
+          totalHours: 0,
+          notes: null,
         });
       } else {
         // Past day with no record

@@ -10,28 +10,18 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
   const [quotaError, setQuotaError] = useState("");
   const [daysRequested, setDaysRequested] = useState(0);
  
-  // Calculate number of days between start and end date
   const calculateDays = (start, end) => {
     if (!start || !end) return 0;
     const startDateObj = new Date(start);
     const endDateObj = new Date(end);
     const diffTime = Math.abs(endDateObj - startDateObj);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
     return diffDays;
   };
-
-  // Map leave type enum to userLeaves object key
   const getLeaveBalanceKey = (leaveType) => {
     const mapping = {
-      "Paid": "paid",
-      "Sick": "sick",
-      "Majlis": "majlis",
-      "Casual": "casual",
-      "Earned": "earned",
-      "Maternity": "maternity",
-      "Paternity": "paternity",
-      "Compensatory": "compensatory",
-      "Unpaid": "unpaid"
+      "PTO": "pto",
+      "Sick": "sick"
     };
     return mapping[leaveType] || leaveType.toLowerCase();
   };
@@ -41,12 +31,6 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
     if (leaveType && startDate && endDate) {
       const days = calculateDays(startDate, endDate);
       setDaysRequested(days);
-
-      // Skip validation for Unpaid leave
-      if (leaveType === "Unpaid") {
-        setQuotaError("");
-        return;
-      }
 
       const balanceKey = getLeaveBalanceKey(leaveType);
       const availableBalance = userLeaves[balanceKey] || 0;
@@ -70,13 +54,11 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
       return;
     }
 
-    // Validate dates
     if (new Date(startDate) > new Date(endDate)) {
       toast.error("End date must be after start date.");
       return;
     }
 
-    // Check quota validation
     if (quotaError) {
       toast.error(quotaError);
       return;
@@ -93,7 +75,6 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
       await api.post("/leaves", payload);
       toast.success("Leave request submitted successfully");
       
-      // Reset form
       setLeaveType("");
       setStartDate("");
       setEndDate("");
@@ -101,10 +82,8 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
       setQuotaError("");
       setDaysRequested(0);
       
-      // Close modal
       setIsOpen(false);
       
-      // Trigger refresh callback if provided
       if (onLeaveAdded) {
         onLeaveAdded();
       }
@@ -114,7 +93,6 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
     }
   };
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
       setLeaveType("");
@@ -126,12 +104,10 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
     }
   }, [isOpen]);
  
-  // Check if submit should be disabled
   const isSubmitDisabled = quotaError !== "" || !leaveType || !startDate || !endDate;
 
-  // Get available balance for selected leave type
   const getAvailableBalance = () => {
-    if (!leaveType || leaveType === "Unpaid") return null;
+    if (!leaveType) return null;
     const balanceKey = getLeaveBalanceKey(leaveType);
     return userLeaves[balanceKey] || 0;
   };
@@ -141,19 +117,19 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-md relative z-80 max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">Apply for Leave</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-30 z-[100] flex justify-end">
+          <div className="w-full sm:w-1/2 lg:w-2/5 bg-white h-full shadow-lg relative z-80 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800">Apply for Leave</h2>
               <button
-                className="text-gray-400 hover:text-gray-600 text-2xl font-semibold transition-colors"
+                className="text-gray-500 hover:text-black text-2xl font-semibold transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 &times;
               </button>
             </div>
  
-            <form className="p-6 space-y-5" onSubmit={handleSubmit}>
+            <form className="p-6 space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Leave Type*
@@ -167,15 +143,8 @@ const ApplyLeaveModal = ({ isOpen, setIsOpen, onLeaveAdded, userLeaves = {} }) =
                   required
                 >
                   <option value="">Select leave type</option>
-                  <option value="Paid">Paid Leave</option>
+                  <option value="PTO">PTO (Paid Time Off)</option>
                   <option value="Sick">Sick Leave</option>
-                  <option value="Majlis">Majlis Leave</option>
-                  <option value="Casual">Casual Leave</option>
-                  <option value="Earned">Earned Leave</option>
-                  <option value="Maternity">Maternity Leave</option>
-                  <option value="Paternity">Paternity Leave</option>
-                  <option value="Compensatory">Compensatory Leave</option>
-                  <option value="Unpaid">Unpaid Leave</option>
                 </select>
                 {availableBalance !== null && (
                   <p className="mt-1 text-xs text-gray-500">

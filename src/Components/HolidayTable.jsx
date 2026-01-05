@@ -45,49 +45,43 @@ const HolidayTable = ({ searchTerm = "" }) => {
 
   const renderTable = (title, data) => (
     <div className="mb-8">
-      <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-teal-500">{title}</h2>
-      <div className="overflow-x-auto shadow-lg rounded-lg">
-        <table className="min-w-full text-sm text-left bg-white">
-          <thead className="bg-gradient-to-r from-teal-600 to-teal-700 text-white">
+      <h2 className="text-lg font-semibold mb-3">{title}</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm text-left border-separate border-spacing-0">
+          <thead className="bg-primary rounded-t-lg">
             <tr>
               {["Date", "Day", "Holiday Name", "Type"].map((header, index) => (
                 <th
                   key={header}
-                  className={`px-6 py-4 font-semibold text-sm uppercase tracking-wider ${
-                    index !== 3 ? "border-r border-teal-500" : ""
-                  }`}
+                  className={`p-3 font-medium text-white whitespace-nowrap border-r last:border-none border-gray-300
+                    ${index === 0 ? "rounded-tl-lg" : ""}
+                    ${index === 3 ? "rounded-tr-lg" : ""}
+                  `}
                 >
                   {header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody>
             {data.length ? (
               data.map((holiday, i) => (
-                <tr 
-                  key={i} 
-                  className="hover:bg-teal-50 transition-colors duration-150 cursor-pointer bg-white"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800 font-medium">
+                <tr key={i} className="border-b hover:bg-gray-50">
+                  <td className="p-3 whitespace-nowrap">
                     {new Date(holiday.date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-700">{holiday.day}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800 font-semibold">{holiday.holidayName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
-                      {holiday.holidayType}
-                    </span>
-                  </td>
+                  <td className="p-3 whitespace-nowrap">{holiday.day}</td>
+                  <td className="p-3 whitespace-nowrap">{holiday.holidayName}</td>
+                  <td className="p-3 whitespace-nowrap">{holiday.holidayType}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500 text-sm">
+                <td colSpan={4} className="p-4 text-center text-gray-500">
                   {searchTerm
                     ? `No ${title.toLowerCase()} found matching "${searchTerm}"`
                     : `No ${title.toLowerCase()} available`}
@@ -105,7 +99,7 @@ const HolidayTable = ({ searchTerm = "" }) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 w-full border border-gray-200">
+    <div className="w-full">
       {renderTable("Upcoming Holidays", upcomingHolidays)}
       {renderTable("Past Holidays", pastHolidays)}
     </div>

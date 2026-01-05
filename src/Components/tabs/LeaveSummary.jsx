@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import api from "../../axios";
 import AttendanceCard from "../../Components/AttendanceCard";
-import { FaUmbrellaBeach, FaUserFriends, FaHospital, FaMoneyBillWave, FaBaby, FaUserTie, FaClock, FaCalendarTimes } from "react-icons/fa";
-import { HiOutlineUserRemove } from "react-icons/hi";
+import { FaMoneyBillWave, FaHospital } from "react-icons/fa";
 import { MdEventAvailable } from "react-icons/md";
 import HolidayTable from "../../Components/HolidayTable";
 import ApplyLeaveModal from "../../Components/LeaveModal";
+import { use } from "react";
 
 const LeaveSummary = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -77,8 +77,8 @@ const LeaveSummary = () => {
     const leaveData = [
         {
             icon: <FaMoneyBillWave />,
-            label: "Paid Leave",
-            available: leaveBalances.paid || 0,
+            label: "PTO (Paid Time Off)",
+            available: leaveBalances.pto || 0,
             badgeColor: "bg-green-500",
         },
         {
@@ -86,53 +86,8 @@ const LeaveSummary = () => {
             label: "Sick Leave",
             available: leaveBalances.sick || 0,
             badgeColor: "bg-blue-500",
-        },
-        {
-            icon: <MdEventAvailable />,
-            label: "Majlis Leave",
-            available: leaveBalances.majlis || 0,
-            badgeColor: "bg-purple-500",
-        },
-        {
-            icon: <FaUmbrellaBeach />,
-            label: "Casual Leave",
-            available: leaveBalances.casual || 0,
-            badgeColor: "bg-yellow-500",
-        },
-        {
-            icon: <FaClock />,
-            label: "Earned Leave",
-            available: leaveBalances.earned || 0,
-            badgeColor: "bg-indigo-500",
-        },
-        {
-            icon: <FaBaby />,
-            label: "Maternity Leave",
-            available: leaveBalances.maternity || 0,
-            badgeColor: "bg-pink-500",
-        },
-        {
-            icon: <FaUserTie />,
-            label: "Paternity Leave",
-            available: leaveBalances.paternity || 0,
-            badgeColor: "bg-cyan-500",
-        },
-        {
-            icon: <FaCalendarTimes />,
-            label: "Compensatory Leave",
-            available: leaveBalances.compensatory || 0,
-            badgeColor: "bg-orange-500",
-        },
-        {
-            icon: <HiOutlineUserRemove />,
-            label: "Unpaid Leave",
-            available: leaveBalances.unpaid || 0,
-            badgeColor: "bg-red-500",
-        },
+        }
     ];
-
-    // Filter out leave types with 0 balance (optional - you can show all if preferred)
-    const activeLeaveData = leaveData.filter(item => item.available > 0 || true); // Show all for now
 
     const formatAppliedLeaves = (data) => {
         return data.map(leave => ({
@@ -157,10 +112,10 @@ const LeaveSummary = () => {
                         </div>
                         <div className="">
                             <h1 className="px-2 text-xs font-light mt-3 ml-1">
-                                Available Leaves: {user?.avalaibleLeaves || 0}
+                                Available Leaves: {userProfile?.avalaibleLeaves || 0}
                             </h1>
                             <h1 className="px-2 text-xs font-light mt-2 ml-1">
-                                Booked Leaves: {user?.bookedLeaves || 0}
+                                Booked Leaves: {userProfile?.bookedLeaves || 0}
                             </h1>
                         </div>
                     </div>
@@ -174,7 +129,7 @@ const LeaveSummary = () => {
             </div>
 
             {/* Leave Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                 {/* Total Leaves Card */}
                 <AttendanceCard
                     icon={<MdEventAvailable />}
@@ -183,7 +138,7 @@ const LeaveSummary = () => {
                     badgeColor="bg-gradient-to-r from-teal-500 to-teal-600"
                 />
                 {/* Individual Leave Type Cards */}
-                {activeLeaveData.map((item, index) => (
+                {leaveData.map((item, index) => (
                     <AttendanceCard
                         key={index}
                         icon={item.icon}
@@ -214,7 +169,7 @@ const LeaveSummary = () => {
                 ) : errorMsg ? (
                     <div className="text-red-400 px-2">{errorMsg}</div>
                 ) : leaves.length === 0 ? (
-                    <div className="text-white px-4">No leave records found.</div>
+                    <div className="text-gray-500 px-4">No leave records found.</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm text-left border-separate border-spacing-0">
