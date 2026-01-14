@@ -25,7 +25,6 @@ export default function Profile() {
         const res = await api.get("/auth/me", {
           withCredentials: true,
         });
-        console.log("User data:", res.data.user);
         setUser(res.data.user);
       } catch (err) {
         console.error("Failed to load user profile", err);
@@ -107,7 +106,6 @@ export default function Profile() {
 
     try {
       setUploading(true);
-      console.log("Uploading avatar:", `/users/${user._id}/upload-avatar` );
       const response = await api.post(`/users/${user._id}/upload-avatar`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'

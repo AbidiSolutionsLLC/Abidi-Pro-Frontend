@@ -295,7 +295,7 @@ const Attendance = () => {
                   className="relative flex items-start group transition-all duration-150"
                 >
                   {/* Timeline dot with pulse animation for today */}
-                  <div className={`absolute left-16 top-6 h-4 w-4 rounded-full transform translate-x-1/2 z-10 border-2 border-white ${
+                  <div className={`absolute left-[66px] top-6 h-4 w-4 rounded-full transform translate-x-1/2 z-10 border-2 border-white ${
                     day.status === "Present" ? "bg-green-500" :
                     day.status === "Absent" ? "bg-red-500" :
                     day.status === "Half Day" ? "bg-yellow-500" :

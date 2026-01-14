@@ -209,7 +209,7 @@ const TimeTracker = () => {
         {activeTab === 0 && (
           <>
             {/* Header Card */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 mb-4 p-4">
+            <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 mb-4 p-2">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-base font-bold text-slate-800 uppercase tracking-tight">Time Logs</h2>
 

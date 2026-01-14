@@ -140,7 +140,7 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="relative flex flex-col bg-transparent text-text p-4 rounded-[1.2rem] min-h-[700px]">
+    <div className="relative flex flex-col bg-transparent text-text p-2 rounded-[1.2rem] min-h-[700px]">
       {/* Back Button */}
         <button
           onClick={() => navigate("/people/profile")}

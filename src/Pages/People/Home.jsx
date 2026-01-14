@@ -224,7 +224,7 @@ const Home = () => {
           cards.map(renderCard)
         ) : (
           <div className="col-span-full">
-            <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 p-6 text-center">
+            <div className="bg-transparent backdrop-blur-sm text-center">
               <p className="text-slate-500 text-sm font-medium">No cards added yet. Click "More" to add cards to your dashboard.</p>
             </div>
           </div>

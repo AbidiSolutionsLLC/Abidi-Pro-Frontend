@@ -3,16 +3,23 @@ import api from "../axios";
 
 export const checkInNow = createAsyncThunk(
   'employee/checkin',
-  async (_, { rejectWithValue }) => {  
+  async (_, { rejectWithValue, getState }) => {  
     try {
       const response = await api.post('/timetrackers/check-in', {}, {  
         withCredentials: true
       });
-      console.log(response.data,"success from api slice")
+      
+      console.log("Check-in response:", response.data);
       return response.data;
     } catch (err) {
-        console.log(err.response.data,"error from api")
-      return rejectWithValue(err.response?.data || "checkInn failed");
+      const errorData = err.response?.data;
+      console.log("Check-in error:", errorData);
+      
+      return rejectWithValue({
+        message: errorData?.message || "Check-in failed",
+        status: err.response?.status,
+        autoClosed: errorData?.autoClosed
+      });
     }
   }
 );
@@ -24,11 +31,41 @@ export const checkOutNow = createAsyncThunk(
       const response = await api.post('/timetrackers/check-out', {}, {
         withCredentials: true
       });
-      console.log(response.data,"success from api slice")
+      
+      console.log("Check-out response:", response.data);
       return response.data;
     } catch (err) {
-         console.log(err.response.data,"error from api")
-      return rejectWithValue(err.response?.data || "checkOut failed");
+      const errorData = err.response?.data;
+      console.log("Check-out error:", errorData);
+      
+      return rejectWithValue({
+        message: errorData?.message || "Check-out failed",
+        status: err.response?.status
+      });
+    }
+  }
+);
+
+// Add a thunk to get today's status
+export const getTodayStatus = createAsyncThunk(
+  'employee/getTodayStatus',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const userId = state.auth?.user?.id;
+      
+      if (!userId) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+      
+      const response = await api.get(`/timetrackers/daily-log/${userId}`);
+      return response.data;
+    } catch (err) {
+      const errorData = err.response?.data;
+      return rejectWithValue({
+        message: errorData?.message || "Failed to get today's status",
+        status: err.response?.status
+      });
     }
   }
 );

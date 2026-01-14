@@ -107,7 +107,7 @@ const Ticket = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-grow sm:flex-grow-0 sm:w-56">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-slate-400" />
+                <Search className="h-4 w-4 text-slate-800" />
               </div>
               <input
                 type="text"

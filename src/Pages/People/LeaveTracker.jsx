@@ -17,7 +17,7 @@ const LeaveTracker = () => {
     setAdminRefresh(i => ++i)
   };
   return (
-    <div className="min-h-screen bg-transparent p-1">
+    <div className="min-h-screen bg-transparent p-2">
 
       {/* Content Area */}
       <div className="bg-transparent">

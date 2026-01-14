@@ -81,23 +81,6 @@ export function TimeLogProvider({ children }) {
     }
   }, [checkout]);
 
-  const checkForOpenSessions = async () => {
-    try {
-      const response = await api.get('/timetrackers/open-sessions');
-      if (response.data.hasOpenSessions) {
-        toast.warning("You have open sessions from previous days. They will be auto-closed when you check out today.");
-      }
-    } catch (error) {
-      console.error("Error checking for open sessions:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (userId) {
-      checkForOpenSessions();
-    }
-  }, [userId]);
-
   return (
     <TimeLogContext.Provider
       value={{ start, elapsed, checkIn, checkOut, loading, error }}

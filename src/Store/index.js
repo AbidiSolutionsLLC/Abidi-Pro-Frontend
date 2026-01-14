@@ -2,7 +2,7 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authReducer from "../slices/authSlice";
-import attendanceTImerSlice from '../slices/attendanceTimer';
+import attendanceTimerSlice from '../slices/attendanceTimer';
 import projectReducer from "./projectSlice";
 import taskReducer from "./taskSlice";
 import attendanceReducer from "../slices/attendanceSlice";
@@ -13,7 +13,7 @@ const rootReducer = combineReducers({
 
   projects: projectReducer,
   tasks: taskReducer,
-  attendanceTimer: attendanceTImerSlice,
+  attendanceTimer: attendanceTimerSlice,
 });
 
 const persistConfig = {
