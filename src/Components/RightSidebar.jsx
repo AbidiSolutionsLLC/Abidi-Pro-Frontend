@@ -3,21 +3,112 @@ import {
     UserCircleIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
+    UserIcon,
+    UsersIcon
 } from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
 import { checkInNow, checkOutNow } from "../slices/attendanceTimer";
 import { toast } from "react-toastify";
+import api from "../axios"; // Make sure this path is correct
+import { fetchCurrentStatus } from "../slices/attendanceTimer";
+
+
 
 const RightSidebar = ({ isOpen, toggleSidebar }) => {
     const dispatch = useDispatch();
     const [elapsedTime, setElapsedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
     const [timerInterval, setTimerInterval] = useState(null);
 
+    // Team data states
+    const [manager, setManager] = useState(null);
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [loadingTeam, setLoadingTeam] = useState(true);
+
     // Get data from Redux store
     const { checkInn, checkOut, loading } = useSelector((state) => state.attendanceTimer);
     const { user } = useSelector((state) => state.auth);
-    const profileImage = user?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e";
+    const profileImage = user?.avatar || "";
     const firstName = user?.firstName || "User";
+
+    useEffect(() => {
+        dispatch(fetchCurrentStatus());
+    }, [dispatch]);
+
+
+    // Fetch team data (manager and team members)
+    useEffect(() => {
+        const fetchTeamData = async () => {
+            if (!user) return;
+
+            try {
+                setLoadingTeam(true);
+
+                // 1. Fetch Manager Details
+                let managerId = null;
+                if (user.reportsTo && typeof user.reportsTo === 'object') {
+                    setManager(user.reportsTo);
+                    managerId = user.reportsTo._id;
+                } else if (user.reportsTo) {
+                    managerId = user.reportsTo;
+                    const mgrRes = await api.get(`/users/${user.reportsTo}`);
+                    setManager(mgrRes.data);
+                } else {
+                    setManager(null); // No manager assigned
+                }
+
+                // 2. Fetch Team Members
+                const allUsersRes = await api.get('/users');
+                const allUsers = allUsersRes.data;
+
+                // Filter: Users who report to the same manager (Peers) AND are not me
+                const myTeam = allUsers.filter(u =>
+                    u._id !== user._id && // Exclude self
+                    u.empStatus === 'Active' &&
+                    (
+                        (managerId && u.reportsTo?._id === managerId) || // Same Manager
+                        (managerId && u.reportsTo === managerId) ||
+                        (u.department?._id === user.department?._id) // Fallback: Same Department
+                    )
+                );
+
+                setTeamMembers(myTeam.slice(0, 5)); // Limit to 5 for sidebar
+            } catch (error) {
+                console.error("Failed to fetch sidebar info", error);
+                toast.error("Failed to load team data");
+            } finally {
+                setLoadingTeam(false);
+            }
+        };
+
+        if (isOpen && user) {
+            fetchTeamData();
+        }
+    }, [user, isOpen]);
+
+    // Avatar component for team members
+    const Avatar = ({ url, name, size = "sm" }) => {
+        const sizeClasses = size === "lg" ? "w-14 h-14" :
+            size === "md" ? "w-10 h-10" :
+                "w-8 h-8";
+
+        if (url) {
+            return (
+                <img
+                    src={url}
+                    alt={name}
+                    className={`${sizeClasses} rounded-full object-cover border-2 border-white shadow-sm`}
+                />
+            );
+        }
+
+        return (
+            <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border-2 border-white shadow-sm flex items-center justify-center`}>
+                <span className={`${size === 'lg' ? 'text-lg' : 'text-xs'} font-bold text-indigo-600`}>
+                    {name?.charAt(0).toUpperCase() || "U"}
+                </span>
+            </div>
+        );
+    };
 
     // Format time from seconds
     const formatTimeFromSeconds = (totalSeconds) => {
@@ -29,19 +120,17 @@ const RightSidebar = ({ isOpen, toggleSidebar }) => {
 
     // Calculate elapsed time from check-in
     useEffect(() => {
+        // Check if session is active (has checkInTime but no checkOutTime)
         if (checkInn?.log?.checkInTime && !checkInn?.log?.checkOutTime) {
             const startTime = new Date(checkInn.log.checkInTime).getTime();
 
-            // Update elapsed time immediately
             const updateElapsed = () => {
                 const now = Date.now();
                 const elapsedSeconds = Math.floor((now - startTime) / 1000);
                 setElapsedTime(formatTimeFromSeconds(elapsedSeconds));
             };
 
-            updateElapsed(); // Initial update
-
-            // Start timer interval
+            updateElapsed();
             const interval = setInterval(updateElapsed, 1000);
             setTimerInterval(interval);
 
@@ -49,7 +138,7 @@ const RightSidebar = ({ isOpen, toggleSidebar }) => {
                 if (interval) clearInterval(interval);
             };
         } else {
-            // Reset timer if checked out or no active session
+            // Session is closed or doesn't exist - stop timer
             if (timerInterval) {
                 clearInterval(timerInterval);
                 setTimerInterval(null);
@@ -135,21 +224,19 @@ const RightSidebar = ({ isOpen, toggleSidebar }) => {
 
                 {/* Profile Section */}
                 <div className="flex flex-col items-center w-full">
-                    <div className="w-16 h-16 rounded-full border-2 border-white shadow-md mb-3 overflow-hidden bg-slate-200">
-                       {profileImage ? (
-              <img
-                src={profileImage}
-                alt={firstName}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="h-11 w-11 rounded-full bg-[#E0E5EA] text-slate-700 flex items-center justify-center text-sm font-bold border-2 border-white shadow-md">
-                {firstName.charAt(0).toUpperCase()}
-              </div>
-            )}
+                    <div className="w-16 h-16 rounded-full border-2 border-white shadow-md mb-3 overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100">
+                        {profileImage ? (
+                            <img
+                                src={profileImage}
+                                alt={firstName}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-slate-700 flex items-center justify-center text-2xl font-bold">
+                                {firstName.charAt(0).toUpperCase()}
+                            </div>
+                        )}
                     </div>
-
-
 
                     <div className="text-center bg-white rounded-xl px-4 py-2 w-full mb-2 shadow-sm border border-slate-100">
                         <h3 className="text-sm font-bold text-slate-800">
@@ -190,82 +277,107 @@ const RightSidebar = ({ isOpen, toggleSidebar }) => {
                             </div>
                         </div>
                     )}
-
-                    {/* Today's Status
-          {checkInn?.log && (
-            <div className="w-full bg-white rounded-xl p-3 mb-3 shadow-sm border border-slate-100">
-              <p className="text-[9px] font-bold text-slate-500 uppercase mb-2">Today's Status</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-700">Check-in:</span>
-                <span className="text-xs font-bold text-slate-800">
-                  {checkInn.log.checkInTime ? 
-                    new Date(checkInn.log.checkInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
-                    '--:--'
-                  }
-                </span>
-              </div>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-xs font-medium text-slate-700">Check-out:</span>
-                <span className="text-xs font-bold text-slate-800">
-                  {checkInn.log.checkOutTime ? 
-                    new Date(checkInn.log.checkOutTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
-                    '--:--'
-                  }
-                </span>
-              </div>
-              <div className="mt-2 pt-2 border-t border-slate-100">
-                <span className="text-xs font-medium text-slate-700">Status: </span>
-                <span className={`text-xs font-bold ml-1 ${
-                  checkInn.log.status === 'Present' ? 'text-green-600' :
-                  checkInn.log.status === 'Half Day' ? 'text-yellow-600' :
-                  checkInn.log.status === 'Absent' ? 'text-red-600' :
-                  'text-slate-600'
-                }`}>
-                  {checkInn.log.status || 'Pending'}
-                </span>
-              </div>
-            </div>
-          )} */}
                 </div>
 
                 {/* Reporting Manager */}
                 <div className="w-full bg-white rounded-xl p-3 mb-3 shadow-sm border border-slate-100">
-                    <p className="text-[9px] font-bold text-slate-500 uppercase mb-2">Reporting Manager</p>
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-lg bg-slate-300 shrink-0 flex items-center justify-center">
-                            <UserCircleIcon className="w-7 h-7 text-slate-500" />
-                        </div>
-                        <div className="overflow-hidden">
-                            <p className="text-xs font-bold text-slate-800 truncate">{user?.reportsTo}</p>
-                            <p className="text-[9px] text-slate-600 truncate">Project Manager</p>
-                        </div>
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-[9px] font-bold text-slate-500 uppercase">Reporting Manager</p>
+                        <UserIcon className="w-4 h-4 text-slate-400" />
                     </div>
+
+                    {loadingTeam ? (
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-lg bg-slate-200 animate-pulse"></div>
+                            <div className="flex-1">
+                                <div className="h-3 bg-slate-200 rounded animate-pulse mb-1"></div>
+                                <div className="h-2 bg-slate-200 rounded animate-pulse w-3/4"></div>
+                            </div>
+                        </div>
+                    ) : manager ? (
+                        <div className="flex items-center gap-2.5">
+                            <Avatar url={manager.avatar} name={manager.name} size="md" />
+                            <div className="overflow-hidden">
+                                <p className="text-xs font-bold text-slate-800 truncate">{manager.name}</p>
+                                <p className="text-[9px] text-slate-600 truncate">
+                                    {manager.designation || "Manager"}
+                                </p>
+                                <p className="text-[8px] text-primary mt-0.5 truncate">
+                                    {manager.email}
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                <UserCircleIcon className="w-6 h-6 text-slate-400" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-medium text-slate-500 italic">
+                                    No manager assigned
+                                </p>
+                                <p className="text-[9px] text-slate-400">(You're the top level)</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Team Overview */}
                 <div className="w-full bg-white rounded-xl p-3 flex-1 shadow-sm border border-slate-100 flex flex-col min-h-0">
-                    <p className="text-[9px] font-bold text-slate-500 uppercase mb-3">Team Overview</p>
-                    <div className="flex flex-col gap-2.5 overflow-y-auto no-scrollbar">
-                        {[
-                            { role: "Manager", name: "Murtaza Mehmood" },
-                            { role: "Developer", name: "Zara Gul" },
-                            { role: "Developer", name: "Aqsa Mehmood" },
-                            { role: "Developer", name: "Robina" },
-                        ].map((member, i) => (
-                            <div key={i} className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-lg bg-slate-200 shrink-0 flex items-center justify-center">
-                                    <UserCircleIcon className="w-6 h-6 text-slate-500" />
+                    <div className="flex items-center justify-between mb-3">
+                        <p className="text-[9px] font-bold text-slate-500 uppercase">Team Overview</p>
+                        <div className="flex items-center gap-1">
+                            <UsersIcon className="w-4 h-4 text-slate-400" />
+                            <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded-full text-slate-600">
+                                {loadingTeam ? "..." : teamMembers.length}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col overflow-y-auto no-scrollbar flex-1">
+                        {loadingTeam ? (
+                            // Loading skeletons
+                            Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div>
+                                    <div className="flex-1">
+                                        <div className="h-2.5 bg-slate-200 rounded animate-pulse mb-1 w-20"></div>
+                                        <div className="h-2 bg-slate-200 rounded animate-pulse w-16"></div>
+                                    </div>
                                 </div>
-                                <div className="overflow-hidden">
-                                    <p className="text-[10px] font-bold text-slate-700 truncate">{member.role}</p>
-                                    <p className="text-[9px] text-slate-500 truncate">{member.name}</p>
+                            ))
+                        ) : teamMembers.length > 0 ? (
+                            teamMembers.map((member) => (
+                                <div
+                                    key={member._id}
+                                    className="flex items-center gap-1 hover:bg-slate-50 p-2 rounded-lg transition-colors cursor-pointer"
+                                >
+                                    <Avatar url={member.avatar} name={member.name} />
+                                    <div className="overflow-hidden flex-1">
+                                        <p className="text-[10px] font-bold text-slate-700 truncate">
+                                            {member.name}
+                                        </p>
+                                        <p className="text-[9px] text-slate-500 truncate">
+                                            {member.designation || "Team Member"}
+                                        </p>
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-4 text-center">
+                                <UsersIcon className="w-8 h-8 text-slate-300 mb-2" />
+                                <p className="text-xs font-medium text-slate-400">
+                                    No team members found
+                                </p>
+                                <p className="text-[10px] text-slate-300 mt-1">
+                                    You'll see team members here
+                                </p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </div>
-        </aside >
+        </aside>
     );
 };
 

@@ -11,8 +11,8 @@ import LeaveLogCard from "../../Components/home/LeaveLogCard";
 import UpcomingDeadlinesCard from "../../Components/home/UpcomingDeadlinesCard";
 import TimeoffBalanceCard from "../../Components/home/TimeoffBalanceCard";
 import TasksAssignedToMeCard from "../../Components/home/TasksAssignedToMeCard";
-import { useTimeLog } from "./TimeLogContext";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCurrentStatus } from "../../slices/attendanceTimer";
 import api from "../../axios";
 import { toast } from "react-toastify";
 
@@ -24,20 +24,55 @@ function format(sec) {
 }
 
 const Home = () => {
+  const dispatch = useDispatch();
   const userInfo = useSelector((state) => state.auth.user);
+  const { checkInn } = useSelector((state) => state.attendanceTimer);
+  
   const profileImage = userInfo?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e";
   const firstName = userInfo?.name || "User";
   const userId = userInfo?._id || userInfo?.id;
+  
   const [loading, setLoading] = useState(true);
+  const [elapsed, setElapsed] = useState(0);
+  const [cards, setCards] = useState([]);
 
   const [time, setTime] = useState({
     hours: "00",
     minutes: "00",
     period: "AM",
   });
-  const [cards, setCards] = useState([]);
 
-  const { elapsed } = useTimeLog();
+  // Fetch current attendance status on mount
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchCurrentStatus());
+    }
+  }, [userId, dispatch]);
+
+  // Calculate elapsed time from check-in
+  useEffect(() => {
+    let interval;
+    
+    if (checkInn?.log?.checkInTime && !checkInn?.log?.checkOutTime) {
+      const startTime = new Date(checkInn.log.checkInTime).getTime();
+      
+      const updateElapsed = () => {
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - startTime) / 1000);
+        setElapsed(elapsedSeconds);
+      };
+      
+      updateElapsed();
+      interval = setInterval(updateElapsed, 1000);
+    } else {
+      setElapsed(0);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [checkInn]);
+
   const { h, m, s } = format(elapsed);
 
   // Fetch user's dashboard cards

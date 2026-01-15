@@ -3,10 +3,10 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { 
-  FaCheckCircle, 
-  FaTimesCircle, 
-  FaClock, 
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
   FaUmbrellaBeach,
   FaRegClock,
   FaBusinessTime,
@@ -40,10 +40,10 @@ const formatTime = (dateString) => {
 };
 
 const formatDate = (date) => {
-  return date.toLocaleDateString("en-US", { 
-    month: "short", 
-    day: "numeric", 
-    year: "numeric" 
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
   });
 };
 
@@ -69,9 +69,10 @@ const Attendance = () => {
       setLoading(true);
       const month = startDate.getMonth() + 1;
       const year = startDate.getFullYear();
-      
+
       const response = await api.get(`/timetrackers/attendance/${month}/${year}`);
       setAttendanceData(response.data);
+      console.log(response.data);
     } catch (error) {
       toast.error("Failed to load attendance data");
       console.error("Error fetching attendance:", error);
@@ -89,7 +90,7 @@ const Attendance = () => {
     const interval = setInterval(() => {
       fetchAttendanceData(weekStart);
     }, 60000);
-    
+
     return () => clearInterval(interval);
   }, [weekStart]);
 
@@ -105,8 +106,12 @@ const Attendance = () => {
 
       const dayData = attendanceData.find(d => {
         const recordDate = new Date(d.date);
-        recordDate.setHours(0, 0, 0, 0);
-        return recordDate.getTime() === day.getTime();
+
+        return (
+          recordDate.getUTCFullYear() === day.getFullYear() &&
+          recordDate.getUTCMonth() === day.getMonth() &&
+          recordDate.getUTCDate() === day.getDate()
+        );
       });
 
       if (dayData) {
@@ -177,7 +182,7 @@ const Attendance = () => {
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setShowCalendar(false);
-    
+
     // Adjust to the Monday of the selected week
     const dayOfWeek = date.getDay(); // 0=Sun,...6=Sat
     const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -197,7 +202,7 @@ const Attendance = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-4">
             <h2 className="text-base font-bold text-slate-800 uppercase tracking-tight">Attendance</h2>
-            <button 
+            <button
               onClick={() => setExpandedView(!expandedView)}
               className="text-xs text-slate-600 flex items-center gap-1 hover:text-slate-800 transition-colors font-medium"
             >
@@ -287,50 +292,45 @@ const Attendance = () => {
           <div className="relative">
             {/* Timeline connector */}
             <div className="absolute left-20 top-0 h-full w-0.5 bg-slate-200 transform translate-x-1/2"></div>
-            
+
             <div className="space-y-4">
               {weeklyData.map((day, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="relative flex items-start group transition-all duration-150"
                 >
                   {/* Timeline dot with pulse animation for today */}
-                  <div className={`absolute left-[66px] top-6 h-4 w-4 rounded-full transform translate-x-1/2 z-10 border-2 border-white ${
-                    day.status === "Present" ? "bg-green-500" :
-                    day.status === "Absent" ? "bg-red-500" :
-                    day.status === "Half Day" ? "bg-yellow-500" :
-                    day.status === "Leave" ? "bg-blue-500" : "bg-purple-500"
-                  } ${new Date(day.fullDate).toDateString() === today.toDateString() ? "animate-pulse shadow-lg" : ""}`}></div>
-                  
+                  <div className={`absolute left-[66px] top-6 h-4 w-4 rounded-full transform translate-x-1/2 z-10 border-2 border-white ${day.status === "Present" ? "bg-green-500" :
+                      day.status === "Absent" ? "bg-red-500" :
+                        day.status === "Half Day" ? "bg-yellow-500" :
+                          day.status === "Leave" ? "bg-blue-500" : "bg-purple-500"
+                    } ${new Date(day.fullDate).toDateString() === today.toDateString() ? "animate-pulse shadow-lg" : ""}`}></div>
+
                   {/* Date/Day badge */}
                   <div className="flex-shrink-0 w-20 text-center pt-1">
-                    <div className={`text-xs text-slate-600 font-medium uppercase tracking-wide ${
-                      day.dayName === 'Sat' || day.dayName === 'Sun' ? 'text-blue-600' : ''
-                    }`}>
+                    <div className={`text-xs text-slate-600 font-medium uppercase tracking-wide ${day.dayName === 'Sat' || day.dayName === 'Sun' ? 'text-blue-600' : ''
+                      }`}>
                       {day.dayName}
                     </div>
-                    <div className={`text-xl font-bold mt-1 ${
-                      day.dayName === 'Sat' || day.dayName === 'Sun' ? 'text-blue-800' : 'text-slate-800'
-                    } ${
-                      new Date(day.fullDate).toDateString() === today.toDateString() ? 
-                      "text-blue-600" : ""
-                    }`}>
+                    <div className={`text-xl font-bold mt-1 ${day.dayName === 'Sat' || day.dayName === 'Sun' ? 'text-blue-800' : 'text-slate-800'
+                      } ${new Date(day.fullDate).toDateString() === today.toDateString() ?
+                        "text-blue-600" : ""
+                      }`}>
                       {day.date}
                     </div>
                   </div>
-                  
+
                   {/* Attendance card */}
-                  <div 
-                    className={`flex-grow ml-8 p-4 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
-                      selectedDay === index ? 
-                        "border-blue-300 shadow-md bg-blue-50/80" : 
+                  <div
+                    className={`flex-grow ml-8 p-4 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${selectedDay === index ?
+                        "border-blue-300 shadow-md bg-blue-50/80" :
                         "border-slate-100 hover:border-slate-200"
-                    } border`}
+                      } border`}
                     onClick={() => toggleDayDetails(index)}
                   >
                     <div className="flex justify-between items-start">
                       <StatusBadge status={day.status} />
-                      
+
                       {day.totalHours > 0 && (
                         <div className="text-base font-bold text-slate-800 flex items-center">
                           <span className="text-xs font-normal text-slate-600 mr-1">Total:</span>
@@ -338,7 +338,7 @@ const Attendance = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     {(day.checkIn || day.checkOut) && (
                       <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-700">
                         {day.checkIn && (
@@ -360,7 +360,7 @@ const Attendance = () => {
                         )}
                       </div>
                     )}
-                    
+
                     {expandedView && (
                       <div className="mt-3 text-sm text-slate-600">
                         {day.notes && (

@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { checkInNow, checkOutNow } from "../../slices/attendanceTimer";
+import { checkInNow, checkOutNow, fetchCurrentStatus } from "../../slices/attendanceTimer";
 import { toast } from "react-toastify";
-import api from "../../axios";
 
 const TimeLogContext = createContext();
 export const useTimeLog = () => useContext(TimeLogContext);
@@ -14,27 +13,31 @@ export function TimeLogProvider({ children }) {
   const dispatch = useDispatch();
   const data = useSelector((state) => state);
   const { user } = data?.auth;
-  const userId = user?.id;
+  const userId = user?.id || user?._id;
 
   const { checkInn, checkOut: checkout, loading, error } = data?.attendanceTimer;
 
   const start = localStart;
 
+  // Fetch current status on mount
   useEffect(() => {
-    const fetchTodayLog = async () => {
-      if (!userId) return;
-      try {
-        const response = await api.get(`/timetrackers/daily-log/${userId}`);
-        if (response.data && response.data.checkInTime && !response.data.checkOutTime) {
-          setLocalStart(new Date(response.data.checkInTime).getTime());
-        }
-      } catch (error) {
-        console.log("No active check-in session found");
-      }
-    };
-    fetchTodayLog();
-  }, [userId]);
+    if (userId) {
+      dispatch(fetchCurrentStatus());
+    }
+  }, [userId, dispatch]);
 
+  // Update localStart based on checkInn state from Redux
+  useEffect(() => {
+    if (checkInn?.log?.checkInTime && !checkInn?.log?.checkOutTime) {
+      setLocalStart(new Date(checkInn.log.checkInTime).getTime());
+    } else {
+      setLocalStart(null);
+      setElapsed(0);
+      clearInterval(intervalRef.current);
+    }
+  }, [checkInn]);
+
+  // Timer interval
   useEffect(() => {
     if (!start) {
       clearInterval(intervalRef.current);
@@ -61,15 +64,7 @@ export function TimeLogProvider({ children }) {
     }
   };
 
-  useEffect(() => {
-    if (checkInn?.log?.checkInTime) {
-      setLocalStart(new Date(checkInn.log.checkInTime).getTime());
-      if (checkInn.message) {
-        toast.success(checkInn.message);
-      }
-    }
-  }, [checkInn]);
-
+  // Handle checkout state changes
   useEffect(() => {
     if (checkout) {
       setLocalStart(null);
