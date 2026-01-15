@@ -328,14 +328,14 @@ export default function EditProfile() {
       {/* Back Button */}
       <button
         onClick={() => navigate("/people/profile")}
-        className="absolute top-4 right-4 bg-white/30 backdrop-blur-lg text-slate-800 font-medium px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 hover:scale-105 text-sm ring-1 ring-white/20 z-50 flex items-center gap-2"
+        className="absolute top-10 right-10 bg-white/30 backdrop-blur-lg text-slate-800 font-medium px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 hover:scale-105 text-sm ring-1 ring-white/20 z-50 flex items-center gap-2"
       >
         <IoArrowBack className="text-base" />
         Back
       </button>
 
       {/* Banner & Profile Pic */}
-      <div className="relative h-28 rounded-lg overflow-hidden shadow-md mb-8">
+      <div className="relative h-28 rounded-lg overflow-hidden shadow-md">
         <img
           src={`https://picsum.photos/1200/200?random=${user._id}`}
           alt="Banner"

@@ -224,7 +224,7 @@ const RightSidebar = ({ isOpen, toggleSidebar }) => {
 
                 {/* Profile Section */}
                 <div className="flex flex-col items-center w-full">
-                    <div className="w-16 h-16 rounded-full border-2 border-white shadow-md mb-3 overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100">
+                    <div className="w-20 h-20 rounded-full border-2 border-white shadow-md overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100 mb-2">
                         {profileImage ? (
                             <img
                                 src={profileImage}

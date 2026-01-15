@@ -85,15 +85,6 @@ const Attendance = () => {
     fetchAttendanceData(weekStart);
   }, [weekStart]);
 
-  // Refresh attendance data when check-in/check-out happens
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchAttendanceData(weekStart);
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [weekStart]);
-
   const generateWeeklyData = (startOfWeek) => {
     const days = [];
     const today = new Date();

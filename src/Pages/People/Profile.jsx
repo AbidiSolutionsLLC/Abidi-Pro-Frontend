@@ -126,7 +126,7 @@ export default function Profile() {
   return (
     <div className="overflow-hidden bg-transparent p-2 m-4 min-h-[700px]">
       {/* Banner & Edit Button */}
-      <div className="relative h-28 rounded-[1.2rem] overflow-hidden shadow-md mb-8">
+      <div className="relative h-28 rounded-[1.2rem] overflow-hidden shadow-md ">
         <img
           src={`https://picsum.photos/1200/200?random=${user._id}`}
           alt="Banner"
