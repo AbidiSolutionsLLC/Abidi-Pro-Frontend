@@ -127,7 +127,7 @@ const LeaveSummary = () => {
                     </div>
                     <button
                         onClick={() => setIsOpen(true)}
-                        className="bg-[#64748b] text-white px-4 py-2.5 rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-all mt-4 sm:mt-0"
+                        className="px-6 py-3 bg-[#64748b] text-white rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest shadow-lg shadow-slate-100 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         Apply Now
                     </button>
