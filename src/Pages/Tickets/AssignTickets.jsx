@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../axios";
-import { toast } from "react-toastify";
+import Toast from "../../Components/Toast"; // Import your custom Toast component
 import {
   ArrowLeft, Trash2, ChevronDown, Flag, User,
   Calendar, Clock, Paperclip, Check,
@@ -18,9 +18,18 @@ const AssignTicket = () => {
   const [ticket, setTicket] = useState(null);
   const [newResponse, setNewResponse] = useState("");
   const [assignDropdownOpen, setAssignDropdownOpen] = useState(false);
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState(null);
   const [adminUsers, setAdminUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Custom Toast State
+  const [toast, setToast] = useState(null);
+
+  // Helper to show custom toast
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -29,7 +38,9 @@ const AssignTicket = () => {
         setTicket(res.data);
         setSelectedAssigneeId(res.data.assignedTo?._id || null);
       } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to fetch ticket");
+        showToast(error.response?.data?.message || "Failed to fetch ticket", "error");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -38,7 +49,7 @@ const AssignTicket = () => {
         const res = await api.get("/users/admins");
         setAdminUsers(res.data);
       } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to fetch admins");
+        showToast(error.response?.data?.message || "Failed to fetch admins", "error");
       }
     };
 
@@ -53,9 +64,9 @@ const AssignTicket = () => {
       const res = await api.patch(`/tickets/${ticketId}/assign`, { assignedTo: userId });
       setTicket(res.data);
       setSelectedAssigneeId(userId);
-      toast.success("Ticket assigned successfully");
+      showToast("Ticket assigned successfully");
     } catch (error) {
-      toast.error(`Failed to assign ticket`);
+      showToast("Failed to assign ticket", "error");
     } finally {
       setAssignDropdownOpen(false);
     }
@@ -70,213 +81,205 @@ const AssignTicket = () => {
       });
       setTicket(res.data);
       setNewResponse("");
-      toast.success("Response submitted");
+      showToast("Response submitted");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to submit response");
+      showToast(error.response?.data?.message || "Failed to submit response", "error");
     }
   };
 
   const handleDeleteTicket = async () => {
     try {
       await api.delete(`/tickets/${ticketId}`);
-      toast.success("Ticket deleted");
-      navigate("/admin/admintickets");
+      showToast("Ticket deleted");
+      setTimeout(() => navigate("/admin/admintickets"), 1000);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete ticket");
+      showToast(error.response?.data?.message || "Failed to delete ticket", "error");
     }
   };
 
   const selectedAssignee = adminUsers.find((u) => u._id === selectedAssigneeId);
 
-  if (!ticket) return <div className="p-4 text-center">Loading ticket...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-transparent p-2 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-slate-600"></div>
+          <p className="mt-3 text-slate-600 text-xs font-medium uppercase tracking-wide">Loading ticket...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="min-h-screen bg-transparent p-2 flex items-center justify-center">
+        <div className="text-center">
+          <p className="mt-3 text-sm font-medium text-slate-500">Ticket not found</p>
+          <button
+            onClick={() => navigate("/admin/admintickets")}
+            className="mt-4 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition"
+          >
+            Back to Tickets
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background flex justify-center">
-      <div className="bg-primary p-6 min-h-screen rounded-2xl m-4 w-full max-w-6xl">
-        <h1 className="text-tblHead text-xl font-semibold mb-4">Tickets</h1>
+    <div className="min-h-screen bg-transparent p-2">
+      {/* Render Custom Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
-        <div className="bg-background rounded-lg shadow-md overflow-hidden">
-          <div className="p-4 border-b">
-            <div className="flex flex-col md:flex-row md:items-center gap-2">
-              <button 
-                onClick={() => navigate("/admin/admintickets")} 
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft size={20} />
-              </button>
-
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold flex items-center gap-2 text-text">
-                  #{ticket.ticketID || ticket._id}: {ticket.subject || ticket.title}
-                </h2>
-                <div className="text-sm text-muted flex gap-2 flex-wrap">
-                  <span className="flex items-center">
-                    <Clock size={14} className="mr-1" /> 
-                    Created {new Date(ticket.createdAt).toLocaleString()}
-                  </span>
-                  <span className="flex items-center">
-                    <Clock size={14} className="mr-1" /> 
-                    Updated {new Date(ticket.updatedAt).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleDeleteTicket} 
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 size={20} />
-                </button>
-
-                <div className="relative">
-                  <button
-                    onClick={() => setAssignDropdownOpen(!assignDropdownOpen)}
-                    className={`px-3 py-2 rounded-md flex items-center gap-2 transition-all ${
-                      selectedAssignee 
-                        ? "bg-green-100 text-green-800 border border-green-200" 
-                        : "bg-gray-100 text-gray-800 border border-gray-200"
-                    } hover:bg-gray-200`}
-                  >
-                    <User size={16} />
-                    {selectedAssignee ? selectedAssignee.name : "Assign"}
-                    <ChevronDown 
-                      size={16} 
-                      className={`transition-transform ${
-                        assignDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-
-                  {assignDropdownOpen && (
-                    <div className="absolute right-0 mt-1 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200 overflow-hidden">
-                      <div className="py-1">
-                        <div className="px-3 py-2 text-xs text-gray-500 border-b">
-                          Assign to admin
-                        </div>
-                        {adminUsers.map((user) => (
-                          <button
-                            key={user._id}
-                            onClick={() => assignToUser(user._id)}
-                            className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 ${
-                              selectedAssigneeId === user._id ? "bg-blue-50 text-blue-600" : ""
-                            }`}
-                          >
-                            {selectedAssigneeId === user._id && (
-                              <Check size={16} className="text-blue-500" />
-                            )}
-                            <span>{user.name}</span>
-                            <span className="text-xs text-gray-400 ml-auto">{user.role}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+      {/* Header Card */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 mb-4 p-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => navigate("/admin/admintickets")}
+              className="p-2 rounded-lg bg-blue-100 text-blue-800 hover:bg-blue-200 transition shadow-sm"
+              title="Back to Tickets"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="truncate">
+              <h2 className="text-base font-bold text-slate-800 uppercase tracking-tight truncate">
+                Ticket #{ticket.ticketID || ticket._id?.slice(0, 6)}: {ticket.subject || ticket.title}
+              </h2>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="text-xs text-slate-500 flex items-center gap-1">
+                  <Clock size={12} />
+                  Created {new Date(ticket.createdAt).toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Rest of your component remains the same */}
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Left Side */}
-            <div className="lg:col-span-2 p-4">
-              {/* Description */}
-              <div className="mb-6 shadow-lg rounded-md p-4 bg-secondary">
-                <h3 className="text-sm font-medium text-text border-b-2 mb-2">Ticket Description</h3>
-                <p className="text-text">{ticket.description}</p>
-              </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDeleteTicket}
+              className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition shadow-sm"
+              title="Delete Ticket"
+            >
+              <Trash2 size={18} />
+            </button>
 
-              {/* Responses */}
-              <div className="mb-6 card rounded-md p-4 bg-secondary shadow-lg">
-                <div className="flex justify-between items-center mb-7 border-b-2 p-1">
-                  <h3 className="text-sm font-medium text-text">Responses</h3>
-                  <span className="text-xs text-muted">
-                    {ticket.responses?.length || 0} Responses
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {(ticket.responses || []).map((response, i) => (
-                    <div key={i} className="p-1">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-lg">
-                          {response.avatar || "👤"}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <h4 className="font-semibold">{response.author}</h4>
-                            <span className="text-xs text-muted">
-                              {new Date(response.time).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="mt-1">{response.content}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="relative">
+              <button
+                onClick={() => setAssignDropdownOpen(!assignDropdownOpen)}
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-sm ${
+                  selectedAssignee 
+                    ? "bg-green-100 text-green-800 border border-green-200" 
+                    : "bg-blue-100 text-blue-800 border border-blue-200"
+                } hover:brightness-95`}
+              >
+                <User size={16} />
+                <span className="text-sm font-medium">
+                  {selectedAssignee ? selectedAssignee.name : "Assign Ticket"}
+                </span>
+                <ChevronDown size={16} />
+              </button>
 
-              {/* Add Response */}
-              <div className="card p-2 bg-secondary rounded-md shadow-xl">
-                <h3 className="text-sm font-medium text-muted mb-2 border-b-2 p-2">
-                  Add Response
-                </h3>
-                <textarea
-                  value={newResponse}
-                  onChange={(e) => setNewResponse(e.target.value)}
-                  className="w-full border rounded-md p-3 min-h-[100px] focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="Add your response here..."
-                />
-                <div className="flex justify-between flex-wrap gap-2 mt-3">
-                  <button className="flex items-center text-gray-600 hover:text-gray-900 text-xs sm:text-sm md:text-base">
-                    <Paperclip size={16} className="mr-1" />
-                    Add Attachment
-                  </button>
-                  <button
-                    onClick={handleSubmitResponse}
-                    className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded"
-                  >
-                    Submit Response
-                  </button>
+              {assignDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg z-50 border border-slate-100 overflow-hidden">
+                  <div className="py-1">
+                    {adminUsers.map((user) => (
+                      <button
+                        key={user._id}
+                        onClick={() => assignToUser(user._id)}
+                        className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-slate-50 transition ${
+                          selectedAssigneeId === user._id ? "bg-blue-50 text-blue-700" : "text-slate-700"
+                        }`}
+                      >
+                        <span className="font-medium">{user.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Right Side */}
-            <div className="p-4">
-              <div className="mb-6 card bg-secondary p-4 rounded-lg shadow-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Ticket Details</h3>
-                <div className="space-y-4">
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left Side */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 p-4">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide border-b border-slate-200 pb-2 mb-3">
+              Description
+            </h3>
+            <p className="text-sm text-slate-700 leading-relaxed">{ticket.description}</p>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 p-4">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4">Responses</h3>
+            <div className="space-y-3">
+              {(ticket.responses || []).map((response, i) => (
+                <div key={i} className="bg-slate-50/80 rounded-xl p-3 border border-slate-100">
                   <div className="flex items-start gap-3">
-                    <Flag size={16} />
-                    <span className="font-medium">{ticket.priority}</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <User size={16} />
-                    <span>{selectedAssignee?.name || "Unassigned"}</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Calendar size={16} />
-                    <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                    <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
+                      {response.avatar || "👤"}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between mb-1">
+                        <h4 className="text-sm font-bold text-slate-800">{response.author}</h4>
+                        <span className="text-xs text-slate-500">{new Date(response.time).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm text-slate-700">{response.content}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              <div className="bg-secondary p-4 rounded shadow">
-                <h3 className="font-medium mb-3">Activity Log</h3>
-                <ul className="text-sm space-y-2">
-                  {(ticket.activities || []).map((act, i) => (
-                    <li key={i}>
-                      {act.type === "assigned" && `Assigned to ${act.to}`}
-                      {act.type === "responded" && `${act.by} responded`}
-                      {act.type === "statusChanged" && `Status changed to ${act.to}`}
-                      {act.type === "created" && "Ticket created"}
-                      <span className="text-xs text-muted ml-2">{act.time}</span>
-                    </li>
-                  ))}
-                </ul>
+          <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 p-4">
+            <textarea
+              value={newResponse}
+              onChange={(e) => setNewResponse(e.target.value)}
+              className="w-full border border-slate-200 rounded-xl p-3 min-h-[120px] text-sm focus:ring-2 focus:ring-blue-300 outline-none"
+              placeholder="Type your response here..."
+            />
+            <div className="flex justify-end mt-3">
+              <button
+                onClick={handleSubmitResponse}
+                disabled={!newResponse.trim()}
+                className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                  newResponse.trim() ? "bg-[#64748b] text-white" : "bg-slate-100 text-slate-400"
+                }`}
+              >
+                Submit Response
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side */}
+        <div className="space-y-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-[1.2rem] shadow-md border border-white/50 p-4">
+            <h3 className="text-sm font-bold text-slate-800 uppercase mb-3 border-b pb-2">Ticket Details</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-red-100 text-red-800"><Flag size={16} /></div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase">Priority</p>
+                  <p className="text-sm font-bold text-slate-800">{ticket.priority}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-100 text-blue-800"><User size={16} /></div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase">Assignee</p>
+                  <p className="text-sm font-bold text-slate-800">{selectedAssignee?.name || "Unassigned"}</p>
+                </div>
               </div>
             </div>
           </div>
