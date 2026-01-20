@@ -9,13 +9,18 @@ const getEmployeeTimesheets = async (month, year) => {
   return response.data;
 };
 
-// --- FIX IS HERE ---
+// New function for weekly timesheets
+const getWeeklyTimesheets = async (weekStart) => {
+  const response = await api.get(`${API_URL}/weekly`, {
+    params: { weekStart }
+  });
+  return response.data;
+};
+
 const createTimesheet = async (timesheetData) => {
-  // REMOVED manual header configuration
   const response = await api.post(API_URL, timesheetData);
   return response.data;
 };
-// -------------------
 
 const getTimesheetById = async (id) => {
   const response = await api.get(`${API_URL}/${id}`);
@@ -30,15 +35,23 @@ const getAllTimesheets = async (month, year) => {
 };
 
 const updateTimesheetStatus = async (id, updateData) => {
-  // If you are sending files here too, remove headers as well
   const response = await api.put(`${API_URL}/${id}/status`, updateData);
   return response.data;
 };
 
+const downloadAttachment = async (timesheetId, attachmentId) => {
+  const response = await api.get(`/timesheets/${timesheetId}/attachments/${attachmentId}/download`, {
+    responseType: 'blob'
+  });
+  return response.data;
+}
+
 export default {
   getEmployeeTimesheets,
+  getWeeklyTimesheets, // Add this
   createTimesheet,
   getTimesheetById,
   getAllTimesheets,
-  updateTimesheetStatus
+  updateTimesheetStatus,
+  downloadAttachment // Add this
 };

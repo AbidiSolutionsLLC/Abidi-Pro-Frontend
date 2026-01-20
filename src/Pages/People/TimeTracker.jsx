@@ -18,6 +18,8 @@ import { toast } from "react-toastify";
 import Timesheet from "./Timesheet";
 import CreateTimesheetModal from "./CreateTimesheetModal";
 import timesheetApi from "../../api/timesheetApi";
+import TableWithPagination from "../../Components/TableWithPagination";
+import { IoDownloadOutline } from "react-icons/io5";
 
 const TimeTracker = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -72,12 +74,12 @@ const TimeTracker = () => {
     }
   };
 
-const fetchTimesheets = async (month, year) => {
+  const fetchTimesheets = async (month, year) => {
     try {
       const today = new Date();
       const targetMonth = month || today.getMonth() + 1;
       const targetYear = year || today.getFullYear();
-      
+
       const response = await timesheetApi.getEmployeeTimesheets(targetMonth, targetYear);
       setTimesheets(response);
     } catch (error) {
@@ -91,6 +93,19 @@ const fetchTimesheets = async (month, year) => {
       fetchTimeLogs();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 1) {
+      fetchTimesheets();
+    }
+  }, [activeTab]);
+
+  const handleTimesheetCreated = async () => {
+    await fetchTimesheets();
+    toast.success("Timesheet created successfully!");
+    setIsCreateTimesheetModalOpen(false);
+  };
+
 
   // Helper to safely parse backend date without timezone shift
   const getBackendDateParts = (dateStr) => {
@@ -194,7 +209,7 @@ const fetchTimesheets = async (month, year) => {
       day: 'numeric'
     }) : '';
   };
-  
+
   // Display backend date correctly (using UTC)
   const formatBackendDate = (dateStr) => {
     if (!dateStr) return '';
@@ -217,21 +232,116 @@ const fetchTimesheets = async (month, year) => {
     const newDate = new Date(selectedDate);
     const today = new Date();
     // Optional: Limit next day navigation to not go beyond today
-    if (newDate < today.setHours(0,0,0,0)) {
-        newDate.setDate(newDate.getDate() + 1);
-        setSelectedDate(newDate);
+    if (newDate < today.setHours(0, 0, 0, 0)) {
+      newDate.setDate(newDate.getDate() + 1);
+      setSelectedDate(newDate);
     } else {
-        // Allow going to today
-         const nextDate = new Date(selectedDate);
-         nextDate.setDate(nextDate.getDate() + 1);
-         if(nextDate <= new Date()) setSelectedDate(nextDate);
+      // Allow going to today
+      const nextDate = new Date(selectedDate);
+      nextDate.setDate(nextDate.getDate() + 1);
+      if (nextDate <= new Date()) setSelectedDate(nextDate);
     }
   };
+
+
+    const timeLogColumns = [
+    {
+      key: "job",
+      label: "Job Title",
+      sortable: true,
+      render: (row) => (
+        <span className="font-medium text-slate-700">{row.job || "-"}</span>
+      )
+    },
+    {
+      key: "date",
+      label: "Date",
+      sortable: true,
+      render: (row) => (
+        <span className="text-slate-600">{formatBackendDate(row.date)}</span>
+      )
+    },
+    {
+      key: "description",
+      label: "Description",
+      sortable: false,
+      render: (row) => (
+        <div className="max-w-xs truncate text-slate-600">{row.description}</div>
+      )
+    },
+    {
+      key: "hours",
+      label: "Hours",
+      sortable: true,
+      render: (row) => (
+        <span className="font-medium text-slate-700">{row.hours}</span>
+      )
+    },
+    {
+      key: "attachments",
+      label: "Attachment",
+      sortable: false,
+      render: (row) => {
+        if (!row.attachments?.[0]?.originalname) return "-";
+        
+        return (
+          <div className="flex items-center gap-1">
+            <IoDownloadOutline size={14} className="text-blue-500" />
+            <span className="text-blue-600 text-xs truncate max-w-[120px]">
+              {row.attachments[0].originalname.split('.').pop().toUpperCase()}
+            </span>
+          </div>
+        );
+      }
+    }
+  ];
+
+  // Define actions for Time Logs
+  const timeLogActions = [
+    {
+      icon: <IoEye size={16} />,
+      title: "View",
+      className: "bg-blue-50 text-blue-600 hover:bg-blue-100",
+      onClick: (row) => handleViewLog(row)
+    },
+    {
+      icon: <IoPencil size={16} />,
+      title: "Edit",
+      className: "bg-green-50 text-green-600 hover:bg-green-100",
+      onClick: (row) => {
+        setEditingLogId(row._id);
+        setModalMode("edit");
+        setIsAddTimeLogModalOpen(true);
+      }
+    },
+    {
+      icon: <IoTrash size={16} />,
+      title: "Delete",
+      className: "bg-red-50 text-red-600 hover:bg-red-100",
+      onClick: (row) => handleDelete(row._id)
+    }
+  ];
+
+  // In the Time Logs section, replace the table with:
+  {!loading && !error && (
+    <TableWithPagination
+      columns={timeLogColumns}
+      data={filteredData}
+      loading={loading}
+      error={error}
+      emptyMessage={selectedDate
+        ? `No time logs found for ${formatDate(selectedDate)}`
+        : "No time logs found. Try selecting a different date or add a new time log."}
+      onRowClick={handleViewLog}
+      actions={timeLogActions}
+      rowsPerPage={5}
+    />
+  )}
 
   return (
     <>
       <div className="min-h-screen bg-transparent p-2">
-       {/* Tab Bar & Action Button Container */}
+        {/* Tab Bar & Action Button Container */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
           <div className="inline-flex flex-row flex-wrap items-center justify-center bg-white/90 backdrop-blur-sm p-1.5 rounded-[1.2rem] shadow-sm border border-white/50">
             {tabs.map((item, index) => (
@@ -287,15 +397,15 @@ const fetchTimesheets = async (month, year) => {
                     <FaAngleLeft size={18} />
                   </button>
 
-<div className="relative" ref={calendarRef}>                    <button
-                      className="px-3 py-2 text-blue-800 bg-blue-100 rounded-lg flex items-center gap-2 hover:bg-blue-200 transition shadow-sm text-sm font-medium"
-                      onClick={() => setShowCalendar(!showCalendar)}
-                    >
-                      <IoCalendarNumberOutline size={18} />
-                      {selectedDate && (
-                        <span className="text-sm font-medium">{formatDate(selectedDate)}</span>
-                      )}
-                    </button>
+                  <div className="relative" ref={calendarRef}>                    <button
+                    className="px-3 py-2 text-blue-800 bg-blue-100 rounded-lg flex items-center gap-2 hover:bg-blue-200 transition shadow-sm text-sm font-medium"
+                    onClick={() => setShowCalendar(!showCalendar)}
+                  >
+                    <IoCalendarNumberOutline size={18} />
+                    {selectedDate && (
+                      <span className="text-sm font-medium">{formatDate(selectedDate)}</span>
+                    )}
+                  </button>
 
                     <AnimatePresence>
                       {showCalendar && (
@@ -321,8 +431,8 @@ const fetchTimesheets = async (month, year) => {
 
                   <button
                     onClick={navigateToNextDay}
-                    disabled={selectedDate >= new Date().setHours(0,0,0,0)} // Disable if today
-                    className={`p-2.5 rounded-lg transition shadow-sm ${selectedDate >= new Date().setHours(0,0,0,0) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                    disabled={selectedDate >= new Date().setHours(0, 0, 0, 0)} // Disable if today
+                    className={`p-2.5 rounded-lg transition shadow-sm ${selectedDate >= new Date().setHours(0, 0, 0, 0) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
                   >
                     <FaAngleRight size={18} />
                   </button>
@@ -391,9 +501,9 @@ const fetchTimesheets = async (month, year) => {
                               <td className="p-4 text-slate-700 font-medium cursor-pointer" onClick={() => handleViewLog(item)}>{item.hours}</td>
                               <td className="p-4 text-slate-600">
                                 {item.attachments?.[0]?.originalname ? (
-                                  <a 
-                                    href={item.attachments[0].url} 
-                                    target="_blank" 
+                                  <a
+                                    href={item.attachments[0].url}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                                     onClick={(e) => e.stopPropagation()} // Prevent row click
@@ -470,13 +580,13 @@ const fetchTimesheets = async (month, year) => {
         onSave={handleSaveLogs}
         onTimeLogAdded={fetchTimeLogs}
       />
-      
+
       {/* Pass selectedDate so the modal knows for which date to create the timesheet */}
       <CreateTimesheetModal
         open={isCreateTimesheetModalOpen}
         onClose={() => setIsCreateTimesheetModalOpen(false)}
-        onTimesheetCreated={fetchTimesheets}
-        selectedDate={selectedDate} 
+        onTimesheetCreated={handleTimesheetCreated}
+        selectedDate={selectedDate}
       />
 
       <EditTimeLogModal
